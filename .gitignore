@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Editor / OS
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Env
+.env
+.env.local
+.env.*.local
+
+# Local tool state (impeccable design hook cache, etc.)
+.impeccable/
