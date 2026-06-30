@@ -49,3 +49,28 @@ add_action( 'wp_enqueue_scripts', 'emifree_enqueue_assets' );
  */
 add_theme_support( 'title-tag' );
 add_theme_support( 'post-thumbnails' );
+
+/**
+ * Per-section JS enqueuer.
+ *
+ * Template parts call emifree_enqueue_section_script( 'products' ) at
+ * the top, before any output. Scripts are loaded in the footer. The
+ * is_admin() guard prevents loading on WP admin screens where
+ * front-page.php isn't used.
+ */
+function emifree_enqueue_section_script( $emifree_section_slug ) {
+	if ( is_admin() ) {
+		return;
+	}
+	$emifree_section_handle = 'emifree-section-' . sanitize_key( $emifree_section_slug );
+	$emifree_section_path   = get_template_directory() . '/assets/js/sections/' . sanitize_key( $emifree_section_slug ) . '.js';
+	if ( file_exists( $emifree_section_path ) ) {
+		wp_enqueue_script(
+			$emifree_section_handle,
+			get_template_directory_uri() . '/assets/js/sections/' . sanitize_key( $emifree_section_slug ) . '.js',
+			array(),
+			EMIFREE_THEME_VERSION,
+			true
+		);
+	}
+}
