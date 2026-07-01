@@ -6,6 +6,7 @@
  *  - Enqueue built CSS (and per-section JS via wp_enqueue_script when added)
  *  - Declare theme support (title-tag, post-thumbnails)
  *  - Provide template helpers (loaded on demand in subsequent pieces)
+ *  - Wire the Contact form AJAX handler (Piece 9)
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -74,3 +75,141 @@ function emifree_enqueue_section_script( $emifree_section_slug ) {
 		);
 	}
 }
+
+/**
+ * Contact section — localizes the AJAX endpoint + nonce alongside the
+ * per-section JS, then enqueues the script.
+ *
+ * Used by template-parts/section-contact.php. Distinct from
+ * emifree_enqueue_section_script() because we need wp_localize_script()
+ * to expose ajaxUrl/nonce to the JS, which the generic helper doesn't.
+ *
+ * Mirrors the localized strings used in the React source:
+ *  - Success: "Message sent successfully! We'll get back to you as soon as possible."
+ *  - Error:   a friendly fallback (real validation messages come from
+ *    the server with per-field details).
+ */
+function emifree_enqueue_contact_script() {
+	if ( is_admin() ) {
+		return;
+	}
+	$emifree_handle = 'emifree-section-contact';
+	$emifree_path   = get_template_directory() . '/assets/js/sections/contact.js';
+	if ( ! file_exists( $emifree_path ) ) {
+		return;
+	}
+	wp_enqueue_script(
+		$emifree_handle,
+		get_template_directory_uri() . '/assets/js/sections/contact.js',
+		array(),
+		EMIFREE_THEME_VERSION,
+		true
+	);
+	wp_localize_script(
+		$emifree_handle,
+		'emifreeContact',
+		array(
+			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+			'nonce'      => wp_create_nonce( 'emifree_contact' ),
+			'successMsg' => __( 'Message sent successfully! We\'ll get back to you as soon as possible.', 'emifree-theme' ),
+			'errorMsg'   => __( 'Something went wrong. Please try again or email us directly.', 'emifree-theme' ),
+		)
+	);
+}
+
+/**
+ * AJAX handler for the Contact form.
+ *
+ * Accepts (POST): action=send_contact, emifree_contact_nonce, name,
+ * email, company, message. Sends wp_mail() to the recipient from
+ * inc/contact.php and returns a JSON response.
+ *
+ * Registers for both logged-in and anonymous visitors via the two
+ * add_action() calls below — wp_ajax_nopriv_* is the no-auth variant.
+ */
+function emifree_handle_contact_submit() {
+	if ( ! isset( $_POST['emifree_contact_nonce'] )
+		|| ! wp_verify_nonce(
+			sanitize_text_field( wp_unslash( $_POST['emifree_contact_nonce'] ) ),
+			'emifree_contact'
+		)
+	) {
+		wp_send_json_error(
+			array( 'message' => __( 'Security check failed. Please reload the page and try again.', 'emifree-theme' ) ),
+			403
+		);
+	}
+
+	$emifree_name    = isset( $_POST['name'] )    ? sanitize_text_field( wp_unslash( $_POST['name'] ) )          : '';
+	$emifree_email   = isset( $_POST['email'] )   ? sanitize_email( wp_unslash( $_POST['email'] ) )               : '';
+	$emifree_company = isset( $_POST['company'] ) ? sanitize_text_field( wp_unslash( $_POST['company'] ) )         : '';
+	$emifree_message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) )     : '';
+
+	// Server-side re-validation — never trust the client.
+	$emifree_errors = array();
+	if ( strlen( $emifree_name ) < 2 ) {
+		$emifree_errors['name'] = __( 'Name must be at least 2 characters.', 'emifree-theme' );
+	}
+	if ( ! is_email( $emifree_email ) ) {
+		$emifree_errors['email'] = __( 'Please enter a valid email address.', 'emifree-theme' );
+	}
+	if ( strlen( $emifree_company ) < 2 ) {
+		$emifree_errors['company'] = __( 'Company name must be at least 2 characters.', 'emifree-theme' );
+	}
+	if ( strlen( $emifree_message ) < 10 ) {
+		$emifree_errors['message'] = __( 'Message must be at least 10 characters.', 'emifree-theme' );
+	}
+	if ( ! empty( $emifree_errors ) ) {
+		wp_send_json_error(
+			array(
+				'message' => __( 'Please correct the highlighted fields.', 'emifree-theme' ),
+				'fields'  => $emifree_errors,
+			),
+			400
+		);
+	}
+
+	require_once get_template_directory() . '/inc/contact.php';
+	$emifree_recipient = emifree_contact_recipient_email();
+	$emifree_subject   = sprintf(
+		'[%s] New contact form submission from %s',
+		wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+		$emifree_name
+	);
+
+	$emifree_body  = sprintf(
+		"Name:    %s\nEmail:   %s\nCompany: %s\n\nMessage:\n%s\n",
+		$emifree_name,
+		$emifree_email,
+		$emifree_company,
+		$emifree_message
+	);
+	$emifree_body .= sprintf(
+		"\n--\nSent: %s\nIP:   %s\nUA:   %s",
+		current_time( 'mysql' ),
+		isset( $_SERVER['REMOTE_ADDR'] ) ? sanitize_text_field( wp_unslash( $_SERVER['REMOTE_ADDR'] ) ) : '-',
+		isset( $_SERVER['HTTP_USER_AGENT'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '-'
+	);
+
+	$emifree_headers = array( 'Reply-To: ' . $emifree_name . ' <' . $emifree_email . '>' );
+	$emifree_sent    = wp_mail( $emifree_recipient, $emifree_subject, $emifree_body, $emifree_headers );
+
+	if ( ! $emifree_sent ) {
+		// Don't leak server config to the form. Log internally; tell
+		// the user to email us directly (the recipient address is shown
+		// in the contact-info cards just above the form).
+		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+			error_log( '[emifree-contact] wp_mail() failed for recipient: ' . $emifree_recipient );
+		}
+		wp_send_json_error(
+			array( 'message' => __( 'We couldn\'t send your message automatically. Please email us directly at info@emifree.com.', 'emifree-theme' ) ),
+			500
+		);
+	}
+
+	wp_send_json_success(
+		array( 'message' => __( 'Message sent successfully! We\'ll get back to you as soon as possible.', 'emifree-theme' ) )
+	);
+}
+add_action( 'wp_ajax_send_contact', 'emifree_handle_contact_submit' );
+add_action( 'wp_ajax_nopriv_send_contact', 'emifree_handle_contact_submit' );
