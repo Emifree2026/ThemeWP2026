@@ -88,14 +88,17 @@
 
 			// Fallback: scroll to #contact. The modal handler (Piece 10)
 			// will call preventDefault() on the event to swallow this.
-			setTimeout( () => {
-				if ( ! document.getElementById( 'emifree-inquiry-modal' ) ) {
-					const emifreeContact = document.getElementById( 'contact' );
-					if ( emifreeContact ) {
-						emifreeContact.scrollIntoView( { behavior: 'smooth' } );
-					}
+			// requestAnimationFrame survives iOS scroll where setTimeout
+			// is throttled.
+			requestAnimationFrame( () => {
+				if ( document.getElementById( 'emifree-inquiry-modal' ) ) {
+					return;
 				}
-			}, 50 );
+				const emifreeContact = document.getElementById( 'contact' );
+				if ( emifreeContact ) {
+					emifreeContact.scrollIntoView( { behavior: 'smooth' } );
+				}
+			} );
 		} );
 	} );
 })();

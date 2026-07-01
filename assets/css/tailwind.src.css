@@ -2,6 +2,21 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ----- Global mobile guard -----
+ * Mirrors src/index.css from the React app. Clamp horizontal overflow
+ * on the document body so any one source of rogue width (a long word
+ * in a button, the client-logo strip, the newsletter input on a narrow
+ * viewport) doesn't push the entire page into side-scroll on phones.
+ * `text-size-adjust: 100%` stops iOS Safari from auto-zooming text.
+ */
+@layer base {
+    html, body {
+        width: 100%;
+        overflow-x: hidden;
+        -webkit-text-size-adjust: 100%;
+    }
+}
+
 /* ----- Hero entrance animations (CSS-only equivalents of the React framer-motion fade-ins) ----- */
 @keyframes hero-fade-in {
 	from { opacity: 0; }

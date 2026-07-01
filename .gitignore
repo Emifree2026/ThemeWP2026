@@ -17,3 +17,6 @@ Thumbs.db
 
 # Local tool state (impeccable design hook cache, etc.)
 .impeccable/
+
+# Local debug / test files (not part of the shipped theme)
+_test-*.html

@@ -31,7 +31,9 @@
         return;
     }
 
-    const emifreeMobileQuery = window.matchMedia('(max-width: 767px)');
+    // 767.98px aligns with Tailwind's md: breakpoint (min-width: 768px),
+    // so a viewport right at 768px is treated the same by JS and CSS.
+    const emifreeMobileQuery = window.matchMedia('(max-width: 767.98px)');
 
     /**
      * Toggle which step-list variant is visible per process.
@@ -145,14 +147,18 @@
             });
             window.dispatchEvent(emifreeEvent);
 
-            setTimeout(() => {
-                if (!document.getElementById('emifree-inquiry-modal')) {
-                    const emifreeContact = document.getElementById('contact');
-                    if (emifreeContact) {
-                        emifreeContact.scrollIntoView({ behavior: 'smooth' });
-                    }
+            // requestAnimationFrame survives iOS scroll where setTimeout
+            // is throttled; we still check the modal exists before
+            // falling back.
+            requestAnimationFrame(() => {
+                if (document.getElementById('emifree-inquiry-modal')) {
+                    return;
                 }
-            }, 50);
+                const emifreeContact = document.getElementById('contact');
+                if (emifreeContact) {
+                    emifreeContact.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
         });
     });
 })();

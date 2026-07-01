@@ -41,6 +41,8 @@ require_once get_template_directory() . '/inc/footer.php';
 								name="email"
 								placeholder="Enter your email"
 								required
+								inputmode="email"
+								autocomplete="email"
 								aria-label="Email address"
 								class="w-full px-6 py-4 bg-zinc-800 border-2 border-zinc-700 rounded-full text-white placeholder-zinc-500 focus:outline-none focus:ring-0 focus:border-blue-500 transition-all duration-200"
 							>

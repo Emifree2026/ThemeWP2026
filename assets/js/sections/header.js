@@ -23,15 +23,25 @@
 	}
 
 	// ---- Sticky-on-scroll: backdrop blur past threshold ----
+	// Throttled via requestAnimationFrame so iOS Safari scroll (~60 events
+	// per second) doesn't trigger 60 classList mutations per second.
 	const emifreeHeaderThreshold = 20;
+	let emifreeScrollTicking = false;
 	const emifreeOnScroll = () => {
-		if ( window.scrollY > emifreeHeaderThreshold ) {
-			emifreeHeader.classList.add( 'bg-white/95', 'backdrop-blur-md', 'shadow-lg' );
-			emifreeHeader.classList.remove( 'bg-white' );
-		} else {
-			emifreeHeader.classList.add( 'bg-white' );
-			emifreeHeader.classList.remove( 'bg-white/95', 'backdrop-blur-md', 'shadow-lg' );
+		if ( emifreeScrollTicking ) {
+			return;
 		}
+		emifreeScrollTicking = true;
+		requestAnimationFrame( () => {
+			emifreeScrollTicking = false;
+			if ( window.scrollY > emifreeHeaderThreshold ) {
+				emifreeHeader.classList.add( 'bg-white/95', 'backdrop-blur-md', 'shadow-lg' );
+				emifreeHeader.classList.remove( 'bg-white' );
+			} else {
+				emifreeHeader.classList.add( 'bg-white' );
+				emifreeHeader.classList.remove( 'bg-white/95', 'backdrop-blur-md', 'shadow-lg' );
+			}
+		} );
 	};
 	window.addEventListener( 'scroll', emifreeOnScroll, { passive: true } );
 	emifreeOnScroll();
@@ -66,6 +76,40 @@
 				if ( emifreeIconOpen )  emifreeIconOpen.classList.remove( 'hidden' );
 				if ( emifreeIconClose ) emifreeIconClose.classList.add( 'hidden' );
 			} );
+		} );
+
+		// Escape key — close the menu if it's open, return focus to trigger.
+		document.addEventListener( 'keydown', ( e ) => {
+			if ( e.key !== 'Escape' ) {
+				return;
+			}
+			if ( emifreeMobileMenu.classList.contains( 'hidden' ) ) {
+				return;
+			}
+			emifreeMobileMenu.classList.add( 'hidden' );
+			emifreeMobileBtn.setAttribute( 'aria-expanded', 'false' );
+			if ( emifreeIconOpen )  emifreeIconOpen.classList.remove( 'hidden' );
+			if ( emifreeIconClose ) emifreeIconClose.classList.add( 'hidden' );
+			emifreeMobileBtn.focus();
+		} );
+
+		// Outside click — close the menu. Excludes clicks on the trigger
+		// itself (the trigger has its own toggle handler) and clicks
+		// anywhere inside the menu (links, pills, etc.).
+		document.addEventListener( 'click', ( e ) => {
+			if ( emifreeMobileMenu.classList.contains( 'hidden' ) ) {
+				return;
+			}
+			if ( emifreeMobileBtn.contains( e.target ) ) {
+				return;
+			}
+			if ( emifreeMobileMenu.contains( e.target ) ) {
+				return;
+			}
+			emifreeMobileMenu.classList.add( 'hidden' );
+			emifreeMobileBtn.setAttribute( 'aria-expanded', 'false' );
+			if ( emifreeIconOpen )  emifreeIconOpen.classList.remove( 'hidden' );
+			if ( emifreeIconClose ) emifreeIconClose.classList.add( 'hidden' );
 		} );
 	}
 
