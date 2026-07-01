@@ -20,6 +20,60 @@
 		return;
 	}
 
+	// ---- Auto-advance gallery setup (mirrors React Products.jsx:113-119) ----
+	// Opt-in only: skipped entirely if the user has prefers-reduced-motion
+	// enabled. Each [data-emifree-gallery] runs its own 4 s interval; the
+	// interval is paused on mouseenter / focusin (so hovering a thumb
+	// or keyboard-navigating into the gallery doesn't fight the user) and
+	// resumed on mouseleave / focusout. emifreeStartAuto / emifreeStopAuto
+	// are exposed via `let` bindings so the thumbnail click handler can
+	// reset the timer (emifreeRestartAuto) and the bottom wiring block
+	// can use the same stop helper.
+	const emifreeReducedMotion = window.matchMedia( '(prefers-reduced-motion: reduce)' ).matches;
+	const emifreeAutoState = emifreeReducedMotion ? null : new WeakMap();
+	let emifreeStartAuto = () => {};
+	let emifreeStopAuto = () => {};
+	let emifreeRestartAuto = () => {};
+
+	if ( ! emifreeReducedMotion ) {
+		emifreeStopAuto = ( emifreeGallery ) => {
+			const emifreeHandle = emifreeAutoState.get( emifreeGallery );
+			if ( emifreeHandle ) {
+				clearInterval( emifreeHandle );
+				emifreeAutoState.delete( emifreeGallery );
+			}
+		};
+
+		emifreeStartAuto = ( emifreeGallery ) => {
+			emifreeStopAuto( emifreeGallery );
+			const emifreeImages = emifreeGallery.querySelectorAll( '[data-emifree-image]' );
+			if ( emifreeImages.length < 2 ) {
+				return;
+			}
+			const emifreeHandle = setInterval( () => {
+				// Find the currently-visible image in this gallery. A
+				// hidden tab means all its images are display:none, in
+				// which case we skip this tick — only the visible panel
+				// advances.
+				const emifreeActive = emifreeGallery.querySelector( '[data-emifree-image]:not(.hidden)' );
+				if ( ! emifreeActive ) {
+					return;
+				}
+				const emifreeCurrent = parseInt( emifreeActive.getAttribute( 'data-emifree-image' ), 10 );
+				const emifreeNext = ( emifreeCurrent + 1 ) % emifreeImages.length;
+				const emifreeNextThumb = emifreeGallery.querySelector( '[data-emifree-thumb="' + emifreeNext + '"]' );
+				if ( emifreeNextThumb ) {
+					emifreeNextThumb.click();
+				}
+			}, 4000 );
+			emifreeAutoState.set( emifreeGallery, emifreeHandle );
+		};
+
+		emifreeRestartAuto = ( emifreeGallery ) => {
+			emifreeStartAuto( emifreeGallery );
+		};
+	}
+
 	// ---- Tab switching ----
 	emifreeTabs.forEach( ( emifreeTab ) => {
 		emifreeTab.addEventListener( 'click', () => {
@@ -72,6 +126,10 @@
 					emifreeOther.classList.toggle( 'scale-105', emifreeIsActive );
 					emifreeOther.classList.toggle( 'opacity-70', ! emifreeIsActive );
 				} );
+
+				// Reset the auto-advance timer so a manual click doesn't
+				// get immediately overridden by an in-flight tick.
+				emifreeRestartAuto( emifreeGallery );
 			} );
 		} );
 	} );
@@ -101,4 +159,16 @@
 			} );
 		} );
 	} );
+
+	// ---- Auto-advance: kick off each gallery's interval + wire
+	// mouseenter/mouseleave/focusin/focusout to pause/resume.
+	if ( ! emifreeReducedMotion ) {
+		document.querySelectorAll( '[data-emifree-gallery]' ).forEach( ( emifreeGallery ) => {
+			emifreeStartAuto( emifreeGallery );
+			emifreeGallery.addEventListener( 'mouseenter', () => emifreeStopAuto( emifreeGallery ) );
+			emifreeGallery.addEventListener( 'mouseleave', () => emifreeStartAuto( emifreeGallery ) );
+			emifreeGallery.addEventListener( 'focusin', () => emifreeStopAuto( emifreeGallery ) );
+			emifreeGallery.addEventListener( 'focusout', () => emifreeStartAuto( emifreeGallery ) );
+		} );
+	}
 })();
