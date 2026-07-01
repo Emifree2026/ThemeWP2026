@@ -13,8 +13,17 @@
 (function () {
 	'use strict';
 
-	const emifreeTabs   = document.querySelectorAll( '[data-emifree-tab]' );
-	const emifreePanels = document.querySelectorAll( '[data-emifree-panel]' );
+	// Scope tab/panel queries to #products so we never act on Knowledge's
+	// tabs (which share the same data-emifree-* attribute names). Without
+	// this, a click on a Knowledge tab would also fire here and toggle
+	// Products panels off, breaking the visible state.
+	const emifreeRoot = document.getElementById( 'products' );
+	if ( ! emifreeRoot ) {
+		return;
+	}
+
+	const emifreeTabs   = emifreeRoot.querySelectorAll( '[data-emifree-tab]' );
+	const emifreePanels = emifreeRoot.querySelectorAll( '[data-emifree-panel]' );
 
 	if ( ! emifreeTabs.length ) {
 		return;
