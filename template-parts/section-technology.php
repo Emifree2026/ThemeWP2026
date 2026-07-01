@@ -19,7 +19,7 @@ $emifree_tech_icons = emifree_technology_icons();
 $emifree_technologies = emifree_technologies();
 ?>
 
-<section id="technology" class="py-24 bg-gradient-to-br from-slate-50 via-white to-blue-50 scroll-mt-20">
+<section id="technology" class="py-12 md:py-24 bg-slate-50 md:bg-gradient-to-br md:from-slate-50 md:via-white md:to-blue-50 scroll-mt-20">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
 		<?php /* ----- Block 1: Hero / Decision Intro ----- */ ?>
@@ -106,8 +106,11 @@ $emifree_technologies = emifree_technologies();
 						<?php $emifree_step_index++; endforeach; ?>
 					</div>
 
-					<?php /* Mobile step list — pills, horizontal scroll; hidden at md+ */ ?>
-					<div class="md:hidden mb-6 overflow-x-auto whitespace-nowrap flex gap-2 pb-2" data-emifree-step-list="mobile">
+					<?php /* Mobile step list — pills, horizontal scroll; hidden at md+.
+					     -webkit-overflow-scrolling:touch gives iOS Safari momentum
+					     scroll inside the pill row. Tailwind doesn't expose this
+					     utility, so it lives in the inline style attribute. */ ?>
+					<div class="md:hidden mb-6 overflow-x-auto whitespace-nowrap flex gap-2 pb-2" style="-webkit-overflow-scrolling: touch;" data-emifree-step-list="mobile">
 						<?php $emifree_step_index = 0; foreach ( $emifree_t['steps'] as $emifree_step ) : ?>
 							<button
 								type="button"
@@ -121,7 +124,7 @@ $emifree_technologies = emifree_technologies();
 					</div>
 
 					<?php /* Step images — only the active one is visible; JS toggles the .hidden class */ ?>
-					<div class="rounded-2xl overflow-hidden bg-slate-100 h-64 md:h-80 flex items-center justify-center p-4">
+					<div class="rounded-2xl overflow-hidden bg-slate-100 h-48 md:h-80 flex items-center justify-center p-4">
 						<?php $emifree_step_index = 0; foreach ( $emifree_t['steps'] as $emifree_step ) : ?>
 							<img
 								src="<?php echo esc_url( $emifree_tech_uri . $emifree_step['image'] ); ?>"
@@ -160,13 +163,13 @@ $emifree_technologies = emifree_technologies();
 					<button
 						type="button"
 						data-emifree-inquiry="technology"
-						class="px-6 py-3 border border-slate-300 bg-white rounded-full font-medium text-slate-800 hover:bg-slate-50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+						class="px-6 py-3.5 min-h-[44px] inline-flex items-center justify-center border border-slate-300 bg-white rounded-full font-medium text-slate-800 hover:bg-slate-50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
 					>
 						Get expert recommendation
 					</button>
 					<a
 						href="#knowledge"
-						class="px-6 py-3 rounded-full font-medium text-blue-700 hover:text-blue-800 inline-flex items-center justify-center gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+						class="px-6 py-3.5 min-h-[44px] inline-flex items-center justify-center rounded-full font-medium text-blue-700 hover:text-blue-800 gap-1 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
 					>
 						View more Technical Specs
 						<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">

@@ -13,7 +13,7 @@ require_once get_template_directory() . '/inc/products.php';
 emifree_enqueue_section_script( 'products' );
 ?>
 
-<section id="products" class="py-24 bg-slate-50">
+<section id="products" class="py-12 md:py-24 bg-slate-50">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
 		<div class="text-center mb-16">

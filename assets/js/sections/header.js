@@ -142,6 +142,30 @@
 			} );
 		} );
 
+		// Mobile menu language pills — visually highlight the active pill
+		// and sync the desktop label so both stay in lockstep. Real i18n
+		// routing lands later; this is the visual placeholder for now.
+		document.querySelectorAll( '.emifree-mobile-lang' ).forEach( ( emifreePill ) => {
+			emifreePill.addEventListener( 'click', ( e ) => {
+				e.preventDefault();
+				const emifreeCode = emifreePill.getAttribute( 'data-emifree-mobile-lang' );
+				if ( ! emifreeCode ) {
+					return;
+				}
+				document.querySelectorAll( '.emifree-mobile-lang' ).forEach( ( emifreeOther ) => {
+					const emifreeIsActive = emifreeOther === emifreePill;
+					emifreeOther.classList.toggle( 'bg-blue-700', emifreeIsActive );
+					emifreeOther.classList.toggle( 'text-white', emifreeIsActive );
+					emifreeOther.classList.toggle( 'bg-slate-100', ! emifreeIsActive );
+					emifreeOther.classList.toggle( 'text-zinc-700', ! emifreeIsActive );
+					emifreeOther.classList.toggle( 'hover:bg-slate-200', ! emifreeIsActive );
+				} );
+				if ( emifreeLangLabel ) {
+					emifreeLangLabel.textContent = emifreeCode;
+				}
+			} );
+		} );
+
 		// Close on outside click
 		document.addEventListener( 'click', () => {
 			emifreeLangMenu.classList.add( 'hidden' );

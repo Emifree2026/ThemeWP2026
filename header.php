@@ -107,11 +107,11 @@ require_once get_template_directory() . '/inc/nav.php';
 						role="menu"
 					>
 						<?php
+						// First-rollout languages only. ES and FR will return
+						// when i18n routing lands.
 						$emifree_languages = array(
 							array( 'code' => 'EN', 'name' => 'English' ),
 							array( 'code' => 'DE', 'name' => 'Deutsch' ),
-							array( 'code' => 'ES', 'name' => 'Espanol' ),
-							array( 'code' => 'FR', 'name' => 'Francais' ),
 						);
 						foreach ( $emifree_languages as $emifree_lang ) :
 							?>
@@ -128,11 +128,12 @@ require_once get_template_directory() . '/inc/nav.php';
 				</div>
 			</div>
 
-			<!-- Mobile menu trigger (visible <md) -->
+			<!-- Mobile menu trigger (visible <md). 44×44 minimum tap target
+			     (WCAG) — the visual 24×24 SVG sits inside that larger hit area. -->
 			<button
 				id="emifree-mobile-menu-btn"
 				type="button"
-				class="md:hidden text-zinc-900 hover:text-blue-700 transition-colors duration-200"
+				class="md:hidden min-h-[44px] min-w-[44px] -mr-2 inline-flex items-center justify-center text-zinc-900 hover:text-blue-700 transition-colors duration-200"
 				aria-label="Toggle mobile menu"
 				aria-expanded="false"
 			>
@@ -171,6 +172,31 @@ require_once get_template_directory() . '/inc/nav.php';
 					+49 3076283520
 				</span>
 			</a>
+
+			<?php /* Language pills inside the mobile menu (DE + EN only for the
+			     first rollout; ES/FR return when i18n routing lands). Tap
+			     target ≥ 44px. The active language is highlighted. */ ?>
+			<div class="pt-4 mt-2 border-t border-slate-100">
+				<div class="flex items-center gap-2">
+					<span class="text-xs font-semibold text-zinc-500 uppercase tracking-wide mr-1">Language</span>
+					<?php
+					$emifree_mobile_langs = array(
+						array( 'code' => 'EN', 'label' => 'EN' ),
+						array( 'code' => 'DE', 'label' => 'DE' ),
+					);
+					foreach ( $emifree_mobile_langs as $emifree_ml ) :
+						$emifree_is_active = ( strtolower( substr( get_bloginfo( 'language' ), 0, 2 ) ) === strtolower( $emifree_ml['code'] ) );
+						?>
+						<a
+							href="#"
+							data-emifree-mobile-lang="<?php echo esc_attr( $emifree_ml['code'] ); ?>"
+							class="emifree-mobile-lang flex-1 text-center min-h-[44px] inline-flex items-center justify-center px-3 py-2 rounded-full text-sm font-medium transition-colors duration-200 <?php echo $emifree_is_active ? 'bg-blue-700 text-white' : 'bg-slate-100 text-zinc-700 hover:bg-slate-200'; ?>"
+						>
+							<?php echo esc_html( $emifree_ml['label'] ); ?>
+						</a>
+					<?php endforeach; ?>
+				</div>
+			</div>
 		</div>
 	</div>
 </header>

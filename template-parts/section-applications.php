@@ -10,7 +10,7 @@
 require_once get_template_directory() . '/inc/applications.php';
 ?>
 
-<section id="applications" class="py-24 bg-white">
+<section id="applications" class="py-12 md:py-24 bg-white">
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
 		<div class="text-center mb-20">
