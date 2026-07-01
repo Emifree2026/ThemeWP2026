@@ -39,16 +39,18 @@
 		<p class="text-xl sm:text-2xl text-emerald-100 mb-8 hero-fade-up" style="animation-delay: 200ms;">
 			Engineered to clean itself.
 		</p>
-		<a
-			href="#technology"
-			class="inline-flex items-center gap-3 bg-gradient-to-r from-blue-700 to-cyan-500 text-white px-8 py-4 rounded-full font-semibold text-lg transition-all duration-300 shadow-lg hero-fade-up hover:shadow-xl"
+		<button
+			type="button"
+			id="emifree-hero-cta"
+			class="bg-gradient-to-r from-blue-700 to-cyan-500 text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-3 transition-all duration-300 shadow-lg hero-fade-up"
 			style="animation-delay: 400ms;"
 		>
 			See how it works
-			<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-				<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+			<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+				<path d="M5 12h14"></path>
+				<path d="m12 5 7 7-7 7"></path>
 			</svg>
-		</a>
+		</button>
 	</div>
 
 	<!-- Client logos strip -->

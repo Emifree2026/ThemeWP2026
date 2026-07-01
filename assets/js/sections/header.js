@@ -105,6 +105,19 @@
 		} );
 	}
 
+	// ---- Hero CTA — scrolls to #technology with header offset ----
+	const emifreeHeroCta = document.getElementById( 'emifree-hero-cta' );
+	if ( emifreeHeroCta ) {
+		emifreeHeroCta.addEventListener( 'click', () => {
+			const emifreeTech = document.getElementById( 'technology' );
+			if ( emifreeTech ) {
+				const emifreeOffset = ( emifreeHeader ? emifreeHeader.offsetHeight : 64 ) + 8;
+				const emifreeTop = emifreeTech.getBoundingClientRect().top + window.pageYOffset - emifreeOffset;
+				window.scrollTo( { top: emifreeTop, behavior: 'smooth' } );
+			}
+		} );
+	}
+
 	// ---- Smooth scroll for in-page anchors (header nav, footer links) ----
 	document.querySelectorAll( 'a[href^="#"]' ).forEach( ( anchor ) => {
 		anchor.addEventListener( 'click', function ( e ) {

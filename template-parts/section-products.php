@@ -139,7 +139,7 @@ emifree_enqueue_section_script( 'products' );
 								<div class="bg-white p-4 rounded-xl shadow-sm border border-slate-100">
 									<div class="flex items-start gap-3">
 										<div class="p-2 bg-blue-100 rounded-lg">
-											<svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+											<svg class="w-5 h-5" fill="none" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
 												<?php echo $emifree_icons[ $emifree_feature['icon'] ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — SVG markup, controlled. ?>
 											</svg>
 										</div>

@@ -29,16 +29,28 @@ require_once get_template_directory() . '/inc/nav.php';
 	<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 		<div class="flex items-center justify-between h-16">
 
-			<!-- Logo — single, h-10. -->
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="flex-shrink-0" aria-label="Emifree — back to home">
-				<img
-					src="<?php echo esc_url( get_template_directory_uri() . '/assets/logo.png' ); ?>"
-					alt="Emifree"
-					class="h-10 w-auto"
-					width="120"
-					height="40"
-				>
-			</a>
+			<!-- Dual logo (logo.png wordmark + emilogo.png) — matches the
+			     baseline React Header's setup. -->
+			<div class="flex-shrink-0 flex items-center gap-3">
+				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Emifree — back to home">
+					<img
+						src="<?php echo esc_url( get_template_directory_uri() . '/assets/logo.png' ); ?>"
+						alt="Emifree"
+						class="h-10 w-auto"
+						width="120"
+						height="40"
+					>
+				</a>
+				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Emifree — back to home">
+					<img
+						src="<?php echo esc_url( get_template_directory_uri() . '/assets/emilogo.png' ); ?>"
+						alt="Emifree"
+						class="h-8 w-auto"
+						width="100"
+						height="32"
+					>
+				</a>
+			</div>
 
 			<!-- Desktop nav (md+) -->
 			<nav class="hidden md:block" aria-label="Primary">

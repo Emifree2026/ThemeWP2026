@@ -28,7 +28,7 @@ require_once get_template_directory() . '/inc/applications.php';
 				<article class="group relative bg-white rounded-2xl p-8 shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-100 hover:border-slate-200">
 					<div class="relative">
 						<div class="w-16 h-16 rounded-2xl bg-gradient-to-br <?php echo esc_attr( $emifree_app['color'] ); ?> flex items-center justify-center mb-6 transition-transform duration-300 group-hover:scale-110">
-							<svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
+							<svg class="w-8 h-8" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
 								<?php
 								$emifree_icons = emifree_application_icons();
 								echo $emifree_icons[ $emifree_app['icon'] ]; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — SVG markup, controlled input.
