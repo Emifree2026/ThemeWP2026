@@ -31,7 +31,7 @@ $emifree_contact_info   = emifree_contact_info();
 		<?php /* ----- Section header ----- */ ?>
 		<div class="text-center mb-20">
 			<h2 class="text-4xl md:text-5xl font-bold text-zinc-900 mb-6">
-				Ready for <span class="bg-gradient-to-r from-blue-700 to-cyan-500 bg-clip-text text-transparent">cleaner air?</span>
+				Ready for <span class="text-blue-700">cleaner air?</span>
 			</h2>
 			<p class="text-xl text-zinc-600 max-w-3xl mx-auto">
 				Plan your next filtration project with us and schedule a free consultation with our engineering team.
