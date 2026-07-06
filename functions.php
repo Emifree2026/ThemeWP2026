@@ -130,33 +130,77 @@ function emifree_route_legal_template() {
 add_action( 'template_redirect', 'emifree_route_legal_template' );
 
 /**
- * Flush rewrite rules on theme activation so the legal routes take
- * effect immediately after install/switch. Without this, the user
- * would need to re-save permalinks under Settings > Permalinks to
- * see /impressum/ /privacy/ /terms/ resolve.
+ * Flush rewrite rules on theme activation so the legal + blog routes
+ * take effect immediately after install/switch. Without this, the
+ * user would need to re-save permalinks under Settings > Permalinks
+ * to see /impressum/ /privacy/ /terms/ /blog/ resolve.
  */
-function emifree_flush_legal_rewrite_rules() {
+function emifree_flush_section_rewrite_rules() {
 	emifree_register_legal_routes();
+	emifree_register_blog_route();
 	flush_rewrite_rules( false );
 }
-add_action( 'after_switch_theme', 'emifree_flush_legal_rewrite_rules' );
+add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
 
 /**
  * One-shot self-flush on the next page load after the routing code
- * was added. The transient flag (`emifree_legal_routes_flushed`)
+ * was added. The transient flag (`emifree_section_routes_flushed`)
  * is set after a successful flush, so this only runs once per deploy
  * (not on every request). After it fires, `after_switch_theme`
  * continues to handle future theme switches.
+ *
+ * Also clears the legacy `emifree_legal_routes_flushed` transient
+ * from earlier versions (Piece 12-14) so installs that already
+ * flushed under the old name won't have a stale flag blocking the
+ * unified flush from firing.
  */
-function emifree_maybe_flush_legal_routes() {
-	if ( get_transient( 'emifree_legal_routes_flushed' ) ) {
+function emifree_maybe_flush_section_routes() {
+	if ( get_transient( 'emifree_section_routes_flushed' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
+	emifree_register_blog_route();
 	flush_rewrite_rules( false );
-	set_transient( 'emifree_legal_routes_flushed', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_legal_routes_flushed' );
+	set_transient( 'emifree_section_routes_flushed', 1, DAY_IN_SECONDS );
 }
-add_action( 'init', 'emifree_maybe_flush_legal_routes', 99 );
+add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
+
+/* -------------------------------------------------------------------------
+ * /blog/ route — same plumbing pattern as the legal routes.
+ *
+ * Routes /blog/ to page-blog.php without requiring a Page record in
+ * wp_posts. Page-blog.php handles its own SEO + body rendering.
+ * ------------------------------------------------------------------------- */
+
+function emifree_register_blog_route() {
+	add_rewrite_rule(
+		'^blog/?$',
+		'index.php?emifree_blog=index',
+		'top'
+	);
+}
+add_action( 'init', 'emifree_register_blog_route' );
+
+function emifree_register_blog_query_var( $vars ) {
+	$vars[] = 'emifree_blog';
+	return $vars;
+}
+add_filter( 'query_vars', 'emifree_register_blog_query_var' );
+
+function emifree_route_blog_template() {
+	if ( ! get_query_var( 'emifree_blog' ) ) {
+		return;
+	}
+	add_filter(
+		'template_include',
+		static function ( $template ) {
+			$emifree_target = locate_template( 'page-blog.php' );
+			return $emifree_target ? $emifree_target : $template;
+		}
+	);
+}
+add_action( 'template_redirect', 'emifree_route_blog_template' );
 
 /**
  * Per-section JS enqueuer.
