@@ -92,7 +92,7 @@ if ( ! function_exists( 'emifree_products' ) ) :
 				'tagline'     => 'High-Efficiency Dust Collection for Dry Processes',
 				'short_desc'  => 'Reliable cartridge and baghouse solutions for heavy dust loads from woodworking, metal grinding, and bulk material handling.',
 				'description' => 'Our dust filtration systems are engineered for dry dust applications. Using advanced media technology and pulse-jet cleaning, they deliver consistent airflow and long filter life — even in the most demanding industrial settings.',
-				'images'      => array( 'dust1.webp', 'dust1.webp', 'dust1.webp' ),
+				'images'      => array( 'Coming Soon.webp', 'Coming Soon.webp', 'Coming Soon.webp' ),
 				'features'    => array(
 					array( 'icon' => 'box',    'title' => 'Modular Design',           'desc' => 'Scalable cartridge and baghouse configurations to match your airflow and space requirements.' ),
 					array( 'icon' => 'gauge',  'title' => 'Pulse-Jet Cleaning',       'desc' => 'Automatic compressed-air cleaning maintains low pressure drop and extends filter life.' ),

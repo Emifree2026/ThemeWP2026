@@ -155,14 +155,15 @@ add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
  * unified flush from firing.
  */
 function emifree_maybe_flush_section_routes() {
-	if ( get_transient( 'emifree_section_routes_flushed' ) ) {
+	if ( get_transient( 'emifree_section_routes_flushed_v2' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
 	flush_rewrite_rules( false );
 	delete_transient( 'emifree_legal_routes_flushed' );
-	set_transient( 'emifree_section_routes_flushed', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_section_routes_flushed' );
+	set_transient( 'emifree_section_routes_flushed_v2', 1, DAY_IN_SECONDS );
 }
 add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
 
@@ -179,23 +180,37 @@ function emifree_register_blog_route() {
 		'index.php?emifree_blog=index',
 		'top'
 	);
+	add_rewrite_rule(
+		'^blog/([^/]+)/?$',
+		'index.php?emifree_blog=post&emifree_blog_slug=$matches[1]',
+		'top'
+	);
 }
 add_action( 'init', 'emifree_register_blog_route' );
 
 function emifree_register_blog_query_var( $vars ) {
 	$vars[] = 'emifree_blog';
+	$vars[] = 'emifree_blog_slug';
 	return $vars;
 }
 add_filter( 'query_vars', 'emifree_register_blog_query_var' );
 
 function emifree_route_blog_template() {
-	if ( ! get_query_var( 'emifree_blog' ) ) {
+	$emifree_blog_mode = get_query_var( 'emifree_blog' );
+	if ( ! $emifree_blog_mode ) {
+		return;
+	}
+	if ( 'index' === $emifree_blog_mode ) {
+		$emifree_template_name = 'page-blog.php';
+	} elseif ( 'post' === $emifree_blog_mode ) {
+		$emifree_template_name = 'page-blog-post.php';
+	} else {
 		return;
 	}
 	add_filter(
 		'template_include',
-		static function ( $template ) {
-			$emifree_target = locate_template( 'page-blog.php' );
+		static function ( $template ) use ( $emifree_template_name ) {
+			$emifree_target = locate_template( $emifree_template_name );
 			return $emifree_target ? $emifree_target : $template;
 		}
 	);

@@ -156,9 +156,7 @@ $emifree_knowledge_tabs = array(
 				</div>
 
 				<div class="bg-gradient-to-br from-blue-100 to-cyan-50 rounded-3xl p-8 flex flex-col items-center justify-center aspect-video">
-					<svg class="w-20 h-20 text-blue-700" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
-						<?php echo $emifree_knowledge_icons['building-2']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — SVG markup, controlled. ?>
-					</svg>
+					<img src="<?php echo esc_url( get_template_directory_uri() . '/assets/icons/berlin.png' ); ?>" alt="Based in Berlin" class="w-20 h-20 object-contain">
 					<p class="text-lg font-semibold text-zinc-900 mt-4">Based in Berlin, Germany</p>
 					<p class="text-sm text-slate-600">Serving industry worldwide since 2010</p>
 				</div>

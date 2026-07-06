@@ -167,3 +167,67 @@ if ( ! function_exists( 'emifree_knowledge_pdf_card' ) ) :
 		echo $emifree_close; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — controlled closing tag.
 	}
 endif;
+
+if ( ! function_exists( 'emifree_get_post_by_slug' ) ) :
+	/**
+	 * Fetch a single blog post's metadata by slug, or null if missing.
+	 *
+	 * Mirrors the React's getPostBySlug() in src/data/blogPosts.jsx.
+	 * Used by /blog/{slug}/ routing to look up the post before rendering.
+	 *
+	 * @param string $emifree_slug Post slug.
+	 * @return array|null Post array from emifree_blog_posts(), or null.
+	 */
+	function emifree_get_post_by_slug( $emifree_slug ) {
+		$emifree_posts = emifree_blog_posts();
+		return isset( $emifree_posts[ $emifree_slug ] ) ? $emifree_posts[ $emifree_slug ] : null;
+	}
+endif;
+
+if ( ! function_exists( 'emifree_get_post_body_html' ) ) :
+	/**
+	 * Load a single blog post's HTML body from data/posts/{slug}.php.
+	 *
+	 * Returns '' (empty string) if no body file exists, the slug is
+	 * unknown, or the file returns a malformed array. The renderer
+	 * (template-parts/page-blog-post.php) passes the return value
+	 * through wp_kses_post() before echo.
+	 *
+	 * @param string $emifree_slug Post slug.
+	 * @return string Post body HTML, or empty string if not available.
+	 */
+	function emifree_get_post_body_html( $emifree_slug ) {
+		$emifree_path = get_template_directory() . '/data/posts/' . $emifree_slug . '.php';
+		if ( ! file_exists( $emifree_path ) ) {
+			return '';
+		}
+		$emifree_body = include $emifree_path;
+		if ( ! is_array( $emifree_body ) || empty( $emifree_body['body_html'] ) ) {
+			return '';
+		}
+		return $emifree_body['body_html'];
+	}
+endif;
+
+if ( ! function_exists( 'emifree_get_all_posts_sorted' ) ) :
+	/**
+	 * Return all blog posts sorted by date descending.
+	 *
+	 * Used to determine the "Read next" suggestion on a single-post
+	 * page (most-recent other post). With only 2 posts this trivially
+	 * resolves to "the other one". Returns the array keyed by slug,
+	 * matching how emifree_blog_posts() keys its data.
+	 *
+	 * @return array<slug => post> Sorted by date DESC.
+	 */
+	function emifree_get_all_posts_sorted() {
+		$emifree_posts = emifree_blog_posts();
+		uasort(
+			$emifree_posts,
+			static function ( $emifree_a, $emifree_b ) {
+				return strcmp( $emifree_b['date'], $emifree_a['date'] );
+			}
+		);
+		return $emifree_posts;
+	}
+endif;
