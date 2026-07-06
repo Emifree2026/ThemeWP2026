@@ -132,7 +132,8 @@ $emifree_contact_info   = emifree_contact_info();
 					<button
 						type="submit"
 						id="emifree-contact-submit"
-						class="w-full bg-gradient-to-r from-blue-700 to-cyan-500 text-white py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+						class="w-full text-white py-4 rounded-xl font-semibold text-lg hover:shadow-xl transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+						style="background: linear-gradient(90deg, #1d4ed8 0%, #06b6d4 100%); box-shadow: 0 10px 25px rgba(6, 182, 212, 0.25);"
 					>
 						<span data-emifree-contact-submit-label>Send Message</span>
 						<svg
@@ -171,7 +172,7 @@ $emifree_contact_info   = emifree_contact_info();
 				<div class="space-y-6">
 					<?php foreach ( $emifree_contact_info as $emifree_info ) : ?>
 						<div class="bg-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 flex items-start gap-4">
-							<div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center flex-shrink-0">
+							<div class="w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0" style="background: linear-gradient(135deg, #2563eb 0%, #06b6d4 100%); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.2);">
 								<svg
 									class="w-6 h-6 text-white"
 									fill="none"

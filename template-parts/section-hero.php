@@ -18,14 +18,16 @@
 	<div class="absolute inset-0 w-full h-full">
 		<video
 			id="hero-video"
+			autoplay
 			muted
 			loop
 			playsinline
+			webkit-playsinline
 			preload="auto"
 			poster="<?php echo esc_url( get_template_directory_uri() . '/assets/images/emilogo.png' ); ?>"
 			class="absolute inset-0 w-full h-full object-cover hero-fade-in"
 		>
-			<source src="<?php echo esc_url( get_template_directory_uri() . '/assets/videos/Video1_WEBHANDLanding.mp4' ); ?>" type="video/mp4">
+			<source src="<?php echo esc_url( get_template_directory_uri() . '/assets/videos/Landing Video_2.1.mp4' ); ?>" type="video/mp4">
 		</video>
 		<div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/60 to-black/30"></div>
 		<div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-transparent"></div>
@@ -43,7 +45,7 @@
 			type="button"
 			id="emifree-hero-cta"
 			class="bg-gradient-to-r from-blue-700 to-cyan-500 text-white px-8 py-4 rounded-full font-semibold text-lg flex items-center gap-3 transition-all duration-300 shadow-lg hero-fade-up"
-			style="animation-delay: 400ms;"
+			style="animation-delay: 400ms; background-image: linear-gradient(90deg, #1d4ed8 0%, #06b6d4 100%); background-color: #2563eb;"
 		>
 			See how it works
 			<svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">

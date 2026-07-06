@@ -91,9 +91,9 @@ require_once get_template_directory() . '/inc/nav.php';
 						aria-expanded="false"
 					>
 						<svg class="w-4 h-4 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-								d="M3 12l2 2m0 0l2-2m-2 2h10M7 4v16M17 4v16M21 12l-2 2m0 0l-2-2m2 2H7">
-							</path>
+							<circle cx="12" cy="12" r="10" stroke-width="2"></circle>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12h20"></path>
+							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
 						</svg>
 						<span id="emifree-lang-label" class="text-sm font-medium text-zinc-700">EN</span>
 						<svg class="w-4 h-4 text-zinc-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
