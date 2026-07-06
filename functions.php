@@ -52,6 +52,113 @@ add_theme_support( 'title-tag' );
 add_theme_support( 'post-thumbnails' );
 
 /**
+ * Legal page routing — /impressum/, /privacy/, /terms/.
+ *
+ * The page-{slug}.php templates (and the SEO/body data in inc/legal.php
+ * + inc/seo.php) are on disk; only the URI-to-template binding is
+ * missing. Rather than creating empty Pages in wp_posts, we route
+ * the slugs directly to the page-{slug}.php templates via a single
+ * add_rewrite_rule. WP then treats the URI as if a matching Page
+ * existed, with the page-{slug}.php falling out of the template
+ * hierarchy naturally. The page shims do their own SEO registration
+ * + body rendering via emifree_seo_register() / emifree_render_legal_page_body().
+ *
+ * Rewrite rules are stored in the wp_options table; we flush them on
+ * theme activation (switch_theme) so the binding lands without manual
+ * permalink re-saves. Note: this is the "rewrite-on-activation"
+ * standard pattern.
+ */
+function emifree_register_legal_routes() {
+	add_rewrite_rule(
+		'^impressum/?$',
+		'index.php?emifree_legal=impressum',
+		'top'
+	);
+	add_rewrite_rule(
+		'^privacy/?$',
+		'index.php?emifree_legal=privacy',
+		'top'
+	);
+	add_rewrite_rule(
+		'^terms/?$',
+		'index.php?emifree_legal=terms',
+		'top'
+	);
+}
+add_action( 'init', 'emifree_register_legal_routes' );
+
+/**
+ * Expose the emifree_legal query var so WP recognizes it. The
+ * template_redirect hook then routes the request to the right
+ * page-{slug}.php template based on the query var.
+ */
+function emifree_register_legal_query_var( $vars ) {
+	$vars[] = 'emifree_legal';
+	return $vars;
+}
+add_filter( 'query_vars', 'emifree_register_legal_query_var' );
+
+/**
+ * On the template_redirect step, if the request carries our
+ * emifree_legal query var, hand the template selection to the
+ * matching page-{slug}.php template.
+ */
+function emifree_route_legal_template() {
+	$emifree_slug = get_query_var( 'emifree_legal' );
+	if ( ! $emifree_slug ) {
+		return;
+	}
+	$emifree_templates = array(
+		'impressum' => 'page-impressum',
+		'privacy'   => 'page-privacy',
+		'terms'     => 'page-terms',
+	);
+	if ( ! isset( $emifree_templates[ $emifree_slug ] ) ) {
+		return;
+	}
+	// Include the page shim in WP's template hierarchy by hooking it
+	// into template_include. This runs after WP's own template
+	// resolution and lets us override with the right page-{slug}.php.
+	add_filter(
+		'template_include',
+		static function ( $template ) use ( $emifree_templates, $emifree_slug ) {
+			$emifree_target = locate_template( 'page-' . $emifree_slug . '.php' );
+			return $emifree_target ? $emifree_target : $template;
+		}
+	);
+}
+add_action( 'template_redirect', 'emifree_route_legal_template' );
+
+/**
+ * Flush rewrite rules on theme activation so the legal routes take
+ * effect immediately after install/switch. Without this, the user
+ * would need to re-save permalinks under Settings > Permalinks to
+ * see /impressum/ /privacy/ /terms/ resolve.
+ */
+function emifree_flush_legal_rewrite_rules() {
+	emifree_register_legal_routes();
+	flush_rewrite_rules( false );
+}
+add_action( 'after_switch_theme', 'emifree_flush_legal_rewrite_rules' );
+
+/**
+ * One-shot self-flush on the next page load after the routing code
+ * was added. The transient flag (`emifree_legal_routes_flushed`)
+ * is set after a successful flush, so this only runs once per deploy
+ * (not on every request). After it fires, `after_switch_theme`
+ * continues to handle future theme switches.
+ */
+function emifree_maybe_flush_legal_routes() {
+	if ( get_transient( 'emifree_legal_routes_flushed' ) ) {
+		return;
+	}
+	emifree_register_legal_routes();
+	flush_rewrite_rules( false );
+	set_transient( 'emifree_legal_routes_flushed', 1, DAY_IN_SECONDS );
+}
+add_action( 'init', 'emifree_maybe_flush_legal_routes', 99 );
+
+/**
  * Per-section JS enqueuer.
  *
  * Template parts call emifree_enqueue_section_script( 'products' ) at
