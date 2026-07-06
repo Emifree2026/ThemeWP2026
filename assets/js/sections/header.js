@@ -187,13 +187,35 @@
 	}
 
 	// ---- Smooth scroll for in-page anchors (header nav, footer links) ----
-	document.querySelectorAll( 'a[href^="#"]' ).forEach( ( anchor ) => {
+	// Handles three href shapes uniformly:
+	//   "#anchor"            in-page fragment (e.g. on /)
+	//   "/#anchor"           absolute path + fragment (the canonical
+	//                        shape used by header nav data so that
+	//                        clicks work cross-page from /impressum/,
+	//                        /privacy/, /terms/ — see inc/nav.php).
+	// For /#anchor, only preventDefault + smooth-scroll if we're
+	// already on the same path; otherwise let the browser navigate.
+	document.querySelectorAll( 'a[href^="#"], a[href^="/#"]' ).forEach( ( anchor ) => {
 		anchor.addEventListener( 'click', function ( e ) {
 			const emifreeHref = this.getAttribute( 'href' );
 			if ( ! emifreeHref || emifreeHref === '#' ) {
 				return;
 			}
-			const emifreeTarget = document.querySelector( emifreeHref );
+			// Strip leading slashes so we end up with just the fragment.
+			const emifreeFragment = emifreeHref.replace( /^\/+/, '' );
+			if ( ! emifreeFragment.startsWith( '#' ) ) {
+				return;
+			}
+			// For absolute-path anchors, only smooth-scroll if we're
+			// already on the same page. If we are not, let the browser
+			// do a full navigation to the homepage + fragment.
+			if ( emifreeHref.startsWith( '/' ) ) {
+				const emifreeSamePath = window.location.pathname === '/' || window.location.pathname === '';
+				if ( ! emifreeSamePath ) {
+					return;
+				}
+			}
+			const emifreeTarget = document.querySelector( emifreeFragment );
 			if ( emifreeTarget ) {
 				e.preventDefault();
 				const emifreeOffset = ( emifreeHeader ? emifreeHeader.offsetHeight : 64 ) + 8;

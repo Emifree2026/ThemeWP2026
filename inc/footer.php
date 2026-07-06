@@ -4,10 +4,16 @@
  *
  * Mirrors src/components/Footer.jsx post-cleanup state. Three columns:
  * Company (Blog, Contact), Resources (Case Studies), Legal (Impressum,
- * Privacy Policy, General Terms). Each link resolves to either an
- * in-page anchor (#contact, #knowledge) or a real route (/blog,
- * /impressum, /privacy, /terms). Routes not yet shipped will 404
- * until those pieces land — that is expected and temporary.
+ * Privacy Policy, General Terms).
+ *
+ * In-page anchors are stored as full path + fragment (`/#contact`,
+ * `/#knowledge`) so they work cross-page from non-homepage routes
+ * (e.g. /impressum/, /privacy/, /terms/). The smooth-scroll handler in
+ * header.js matches both `#anchor` and `/#anchor` and only intercepts
+ * the latter when the user is already on the same path; otherwise
+ * the browser performs a full navigation to the homepage. Routes
+ * not yet shipped (e.g. /blog) will 404 until those pieces land —
+ * that is expected and temporary.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -19,10 +25,10 @@ if ( ! function_exists( 'emifree_footer_links' ) ) :
 		return array(
 			'Company'   => array(
 				array( 'name' => 'Blog',    'href' => '/blog' ),
-				array( 'name' => 'Contact', 'href' => '#contact' ),
+				array( 'name' => 'Contact', 'href' => '/#contact' ),
 			),
 			'Resources' => array(
-				array( 'name' => 'Case Studies', 'href' => '#knowledge' ),
+				array( 'name' => 'Case Studies', 'href' => '/#knowledge' ),
 			),
 			'Legal'     => array(
 				array( 'name' => 'Impressum',            'href' => '/impressum' ),
