@@ -256,7 +256,7 @@ $emifree_knowledge_tabs = array(
 				<?php endforeach; ?>
 			</div>
 
-			<div class="bg-gradient-to-r from-blue-700 to-cyan-600 rounded-3xl p-8 md:p-12 text-white text-center">
+				<div class="rounded-3xl p-8 md:p-12 text-white text-center" style="background: linear-gradient(90deg, #1d4ed8 0%, #06b6d4 100%);">
 				<h3 class="text-2xl md:text-3xl font-bold mb-4">Need Custom Documentation?</h3>
 				<p class="text-lg text-blue-100 mb-8 max-w-2xl mx-auto">
 					Can't find what you're looking for? Contact our technical team for custom datasheets, CAD drawings, or specific documentation for your application.
