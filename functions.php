@@ -284,6 +284,55 @@ function emifree_enqueue_contact_script() {
 }
 
 /**
+ * Tawk.to live chat widget.
+ *
+ * Renders the Tawk.to bootstrap inline (defining `window.Tawk_API`)
+ * and then loads the actual widget script from tawk.to's CDN. Both
+ * fire on wp_footer (priority 100 — late) so they don't block page
+ * render.
+ *
+ * Property ID: 1jsu0245o (separate widget from the production
+ * emifree.com widget, which uses 1jogl5hfo). If you want this local
+ * site to share the same inbox as production, swap the property ID.
+ *
+ * Privacy note: per the Privacy Policy text, the Tawk.to widget
+ * "will not load, and no data will be transferred until you grant
+ * permission via the Cookiebot banner." That gate is currently NOT
+ * implemented — the widget loads unconditionally, matching the
+ * behavior of the React app's index.html. If you want strict
+ * consent-gating here, swap this for a Cookiebot API call that
+ * fires on consent.
+ */
+function emifree_enqueue_tawk_widget() {
+	if ( is_admin() ) {
+		return;
+	}
+	$emifree_tawk_property_id = '1jsu0245o';
+	add_action(
+		'wp_footer',
+		static function () use ( $emifree_tawk_property_id ) {
+			?>
+			<!--Start of Tawk.to Script-->
+			<script type="text/javascript">
+			var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+			(function(){
+			var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+			s1.async=true;
+			s1.src='https://embed.tawk.to/6a046f4de4f8631c3c9f3766/<?php echo esc_js( $emifree_tawk_property_id ); ?>';
+			s1.charset='UTF-8';
+			s1.setAttribute('crossorigin','*');
+			s0.parentNode.insertBefore(s1,s0);
+			})();
+			</script>
+			<!--End of Tawk.to Script-->
+			<?php
+		},
+		100
+	);
+}
+add_action( 'wp_enqueue_scripts', 'emifree_enqueue_tawk_widget' );
+
+/**
  * AJAX handler for the Contact form.
  *
  * Accepts (POST): action=send_contact, emifree_contact_nonce, name,
