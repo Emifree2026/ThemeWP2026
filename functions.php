@@ -71,29 +71,48 @@ add_theme_support( 'post-thumbnails' );
 function emifree_register_legal_routes() {
 	add_rewrite_rule(
 		'^impressum/?$',
-		'index.php?emifree_legal=impressum',
+		'index.php?emifree_legal=impressum&emifree_lang=en',
 		'top'
 	);
 	add_rewrite_rule(
 		'^privacy/?$',
-		'index.php?emifree_legal=privacy',
+		'index.php?emifree_legal=privacy&emifree_lang=en',
 		'top'
 	);
 	add_rewrite_rule(
 		'^terms/?$',
-		'index.php?emifree_legal=terms',
+		'index.php?emifree_legal=terms&emifree_lang=en',
+		'top'
+	);
+	// German (de) routes — slug names match the German page names
+	// (impressum unchanged, datenschutz, agb).
+	add_rewrite_rule(
+		'^de/impressum/?$',
+		'index.php?emifree_legal=impressum&emifree_lang=de',
+		'top'
+	);
+	add_rewrite_rule(
+		'^de/datenschutz/?$',
+		'index.php?emifree_legal=datenschutz&emifree_lang=de',
+		'top'
+	);
+	add_rewrite_rule(
+		'^de/agb/?$',
+		'index.php?emifree_legal=agb&emifree_lang=de',
 		'top'
 	);
 }
 add_action( 'init', 'emifree_register_legal_routes' );
 
 /**
- * Expose the emifree_legal query var so WP recognizes it. The
- * template_redirect hook then routes the request to the right
- * page-{slug}.php template based on the query var.
+ * Expose the emifree_legal and emifree_lang query vars so WP
+ * recognizes them. The template_redirect hook then routes the
+ * request to the right page-{slug}.php template based on the
+ * query var.
  */
 function emifree_register_legal_query_var( $vars ) {
 	$vars[] = 'emifree_legal';
+	$vars[] = 'emifree_lang';
 	return $vars;
 }
 add_filter( 'query_vars', 'emifree_register_legal_query_var' );
@@ -101,28 +120,41 @@ add_filter( 'query_vars', 'emifree_register_legal_query_var' );
 /**
  * On the template_redirect step, if the request carries our
  * emifree_legal query var, hand the template selection to the
- * matching page-{slug}.php template.
+ * matching page-{slug}.php template. The slug includes the
+ * language prefix (e.g. "impressum" for English, "impressum"
+ * for German — same slug because we use one template per page
+ * that dispatches on emifree_lang).
  */
 function emifree_route_legal_template() {
 	$emifree_slug = get_query_var( 'emifree_legal' );
+	$emifree_lang = get_query_var( 'emifree_lang' );
 	if ( ! $emifree_slug ) {
 		return;
 	}
 	$emifree_templates = array(
-		'impressum' => 'page-impressum',
-		'privacy'   => 'page-privacy',
-		'terms'     => 'page-terms',
+		// English
+		'impressum'   => 'page-impressum',
+		'privacy'     => 'page-privacy',
+		'terms'       => 'page-terms',
+		// German
+		'datenschutz' => 'page-de-datenschutz',
+		'agb'         => 'page-de-agb',
 	);
-	if ( ! isset( $emifree_templates[ $emifree_slug ] ) ) {
+	// German Impressum uses the same slug as English (just /de/impressum/).
+	if ( 'de' === $emifree_lang ) {
+		$emifree_template = 'page-de-impressum';
+	} elseif ( isset( $emifree_templates[ $emifree_slug ] ) ) {
+		$emifree_template = $emifree_templates[ $emifree_slug ];
+	} else {
 		return;
 	}
-	// Include the page shim in WP's template hierarchy by hooking it
-	// into template_include. This runs after WP's own template
-	// resolution and lets us override with the right page-{slug}.php.
+	if ( ! isset( $emifree_template ) ) {
+		return;
+	}
 	add_filter(
 		'template_include',
-		static function ( $template ) use ( $emifree_templates, $emifree_slug ) {
-			$emifree_target = locate_template( 'page-' . $emifree_slug . '.php' );
+		static function ( $template ) use ( $emifree_template ) {
+			$emifree_target = locate_template( $emifree_template );
 			return $emifree_target ? $emifree_target : $template;
 		}
 	);
@@ -155,7 +187,7 @@ add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
  * unified flush from firing.
  */
 function emifree_maybe_flush_section_routes() {
-	if ( get_transient( 'emifree_section_routes_flushed_v2' ) ) {
+	if ( get_transient( 'emifree_section_routes_flushed_v3' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
@@ -163,7 +195,8 @@ function emifree_maybe_flush_section_routes() {
 	flush_rewrite_rules( false );
 	delete_transient( 'emifree_legal_routes_flushed' );
 	delete_transient( 'emifree_section_routes_flushed' );
-	set_transient( 'emifree_section_routes_flushed_v2', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_section_routes_flushed_v2' );
+	set_transient( 'emifree_section_routes_flushed_v3', 1, DAY_IN_SECONDS );
 }
 add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
 

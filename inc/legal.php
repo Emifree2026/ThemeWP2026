@@ -27,13 +27,26 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * @return array{title:string,description:string,url:string,content:string,schema:array}|null
  */
-function emifree_legal_page( $slug ) {
+function emifree_legal_page( $slug, $lang = 'en' ) {
+	switch ( $lang ) {
+		case 'de':
+			return emifree_legal_page_de( $slug );
+		default:
+			return emifree_legal_page_en( $slug );
+	}
+}
+
+function emifree_legal_page_en( $slug ) {
 	switch ( $slug ) {
 		case 'impressum':
 			return array(
 				'title'       => 'Impressum · Emifree GmbH',
 				'description' => 'Legal notice for Emifree GmbH, Berlin — Managing Director Ingo Wagner, HRB 133977 B, VAT DE 815286735.',
 				'url'         => EMIFREE_SITE_URL . '/impressum',
+				'lang'        => 'en',
+				'lang_slug'   => 'impressum',
+				'de_slug'     => 'impressum',
+				'de_url'      => EMIFREE_SITE_URL . '/de/impressum',
 				'schema'      => array(
 					'@context'      => 'https://schema.org',
 					'@type'         => 'WebPage',
@@ -53,6 +66,10 @@ function emifree_legal_page( $slug ) {
 				'title'       => 'Privacy Policy · Emifree GmbH',
 				'description' => 'Privacy policy for the Emifree GmbH website — GDPR-compliant notice on data collection, processing, your rights, and the cookies/plugins we use.',
 				'url'         => EMIFREE_SITE_URL . '/privacy',
+				'lang'        => 'en',
+				'lang_slug'   => 'privacy',
+				'de_slug'     => 'datenschutz',
+				'de_url'      => EMIFREE_SITE_URL . '/de/datenschutz',
 				'schema'      => array(
 					'@context'      => 'https://schema.org',
 					'@type'         => 'WebPage',
@@ -72,6 +89,10 @@ function emifree_legal_page( $slug ) {
 				'title'       => 'General Terms and Conditions (GTC) · Emifree GmbH',
 				'description' => 'Emifree GmbH General Terms and Conditions (GTC) for B2B sales of industrial air filtration systems. Applicable law: Federal Republic of Germany. Exclusive jurisdiction: Berlin.',
 				'url'         => EMIFREE_SITE_URL . '/terms',
+				'lang'        => 'en',
+				'lang_slug'   => 'terms',
+				'de_slug'     => 'agb',
+				'de_url'      => EMIFREE_SITE_URL . '/de/agb',
 				'schema'      => array(
 					'@context'      => 'https://schema.org',
 					'@type'         => 'WebPage',
@@ -90,13 +111,99 @@ function emifree_legal_page( $slug ) {
 	return null;
 }
 
+function emifree_legal_page_de( $slug ) {
+	switch ( $slug ) {
+		case 'impressum':
+			return array(
+				'title'       => 'Impressum · Emifree GmbH',
+				'description' => 'Rechtliche Hinweise der Emifree GmbH, Berlin — Geschäftsführer Ingo Wagner, HRB 133977 B, USt-IdNr. DE 815286735.',
+				'url'         => EMIFREE_SITE_URL . '/de/impressum',
+				'lang'        => 'de',
+				'lang_slug'   => 'impressum',
+				'en_slug'     => 'impressum',
+				'en_url'      => EMIFREE_SITE_URL . '/impressum',
+				'schema'      => array(
+					'@context'      => 'https://schema.org',
+					'@type'         => 'WebPage',
+					'name'          => 'Impressum',
+					'url'           => EMIFREE_SITE_URL . '/de/impressum',
+					'inLanguage'    => 'de',
+					'description'   => 'Rechtliche Hinweise der Emifree GmbH, Berlin — Geschäftsführer Ingo Wagner, HRB 133977 B, USt-IdNr. DE 815286735.',
+					'publisher'     => array(
+						'@type' => 'Organization',
+						'name'  => 'Emifree GmbH',
+						'url'   => EMIFREE_SITE_URL,
+					),
+				),
+			);
+		case 'datenschutz':
+			return array(
+				'title'       => 'Datenschutzerklärung · Emifree GmbH',
+				'description' => 'Datenschutzerklärung der Emifree GmbH — DSGVO-konforme Hinweise zur Erhebung, Verarbeitung und Speicherung personenbezogener Daten sowie zu Ihren Rechten als betroffene Person.',
+				'url'         => EMIFREE_SITE_URL . '/de/datenschutz',
+				'lang'        => 'de',
+				'lang_slug'   => 'datenschutz',
+				'en_slug'     => 'privacy',
+				'en_url'      => EMIFREE_SITE_URL . '/privacy',
+				'schema'      => array(
+					'@context'      => 'https://schema.org',
+					'@type'         => 'WebPage',
+					'name'          => 'Datenschutzerklärung',
+					'url'           => EMIFREE_SITE_URL . '/de/datenschutz',
+					'inLanguage'    => 'de',
+					'description'   => 'Datenschutzerklärung der Emifree GmbH — DSGVO-konforme Hinweise zur Erhebung, Verarbeitung und Speicherung personenbezogener Daten sowie zu Ihren Rechten als betroffene Person.',
+					'publisher'     => array(
+						'@type' => 'Organization',
+						'name'  => 'Emifree GmbH',
+						'url'   => EMIFREE_SITE_URL,
+					),
+				),
+			);
+		case 'agb':
+			return array(
+				'title'       => 'Allgemeine Geschäftsbedingungen (AGB) · Emifree GmbH',
+				'description' => 'Allgemeine Geschäftsbedingungen (AGB) der Emifree GmbH für den B2B-Vertrieb industrieller Filteranlagen. Anwendbares Recht: Bundesrepublik Deutschland. Ausschließlicher Gerichtsstand: Berlin.',
+				'url'         => EMIFREE_SITE_URL . '/de/agb',
+				'lang'        => 'de',
+				'lang_slug'   => 'agb',
+				'en_slug'     => 'terms',
+				'en_url'      => EMIFREE_SITE_URL . '/terms',
+				'schema'      => array(
+					'@context'      => 'https://schema.org',
+					'@type'         => 'WebPage',
+					'name'          => 'Allgemeine Geschäftsbedingungen (AGB)',
+					'url'           => EMIFREE_SITE_URL . '/de/agb',
+					'inLanguage'    => 'de',
+					'description'   => 'Allgemeine Geschäftsbedingungen (AGB) der Emifree GmbH für den B2B-Vertrieb industrieller Filteranlagen. Anwendbares Recht: Bundesrepublik Deutschland. Ausschließlicher Gerichtsstand: Berlin.',
+					'publisher'     => array(
+						'@type' => 'Organization',
+						'name'  => 'Emifree GmbH',
+						'url'   => EMIFREE_SITE_URL,
+					),
+				),
+			);
+	}
+	return null;
+}
+
 /**
  * Render the body HTML for a legal page. The actual content is
  * inline below per slug — there's enough shared structure (page
  * header band, semantic article body, back-to-home footer) that
  * this single helper is preferable to three template parts.
  */
-function emifree_render_legal_body( $slug ) {
+function emifree_render_legal_body( $slug, $lang = 'en' ) {
+	if ( 'de' === $lang ) {
+		switch ( $slug ) {
+			case 'impressum':
+				return emifree_render_impressum_de_body();
+			case 'datenschutz':
+				return emifree_render_datenschutz_de_body();
+			case 'agb':
+				return emifree_render_agb_de_body();
+		}
+		return '';
+	}
 	switch ( $slug ) {
 		case 'impressum':
 			return emifree_render_impressum_body();
@@ -366,6 +473,272 @@ function emifree_render_terms_body(): string {
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
 				</svg>
 				Back to home
+			</a>
+		</div>
+	</article>
+	<?php
+	return (string) ob_get_clean();
+}
+<?php
+/* -------------------------------------------------------------------------
+ * German (de) page body renderers.
+ *
+ * Mirrors src/pages/{Impressum,Privacy,Terms}.jsx content translated
+ * to German. Source markdown files at assets/Legal/{impressum,
+ * privacy_policy, terms}_de.md were the translation source. The
+ * markup structure, section ordering, and class set match the
+ * English renderers above so future style changes propagate cleanly.
+ * ------------------------------------------------------------------------- */
+
+function emifree_render_impressum_de_body(): string {
+	ob_start();
+	?>
+	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
+		<p class="text-lg leading-relaxed mb-6">
+			<strong>Angaben gemäß § 5 TMG (Telemediengesetz) / § 2 DL-InfoV:</strong>
+		</p>
+		<p class="text-lg leading-relaxed mb-10">
+			Emifree GmbH Produktion von Filteranlagen<br>
+			Pestalozzistraße 13<br>
+			12557 Berlin, Deutschland
+		</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">Vertreten durch den Geschäftsführer</h2>
+		<p class="text-lg leading-relaxed mb-6">Ingo Wagner</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">Kontaktdaten</h2>
+		<ul class="text-lg leading-relaxed mb-6 space-y-1">
+			<li><strong>Telefon:</strong> <a href="tel:+493076283520" class="text-blue-700 hover:text-blue-800">+49 3076283520</a></li>
+			<li><strong>E-Mail:</strong> <a href="mailto:info@emifree.com" class="text-blue-700 hover:text-blue-800">info@emifree.com</a></li>
+			<li><strong>Internet:</strong> <a href="https://www.emifree.com" class="text-blue-700 hover:text-blue-800">www.emifree.com</a></li>
+		</ul>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">Registereintrag</h2>
+		<p class="text-lg leading-relaxed mb-6">
+			Eintragung im Handelsregister.<br>
+			<strong>Registergericht:</strong> Amtsgericht Berlin (Charlottenburg)<br>
+			<strong>Registernummer:</strong> HRB 133977 B
+		</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">Umsatzsteuer-Identifikationsnummer</h2>
+		<p class="text-lg leading-relaxed mb-6">
+			Umsatzsteuer-Identifikationsnummer gemäß § 27 a Umsatzsteuergesetz:<br>
+			<strong>DE 815286735</strong>
+		</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">Wichtiger Hinweis für Verbraucher (B2B-Exklusivität)</h2>
+		<p class="text-lg leading-relaxed mb-6">
+			Diese Website sowie die hierin von der Emifree GmbH dargestellten und veröffentlichten Waren richten sich ausschließlich an gewerbliche Unternehmen / Händler (im Sinne von § 14 BGB, § 1 Abs. 2 HGB und § 15 II EStG). Der Abschluss von Kaufverträgen und der Verkauf von Waren an Privatpersonen / Verbraucher gemäß § 13 BGB sind ausdrücklich ausgeschlossen.
+		</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">
+			Inhaltlich Verantwortlicher gemäß § 18 Abs. 2 MStV
+		</h2>
+		<p class="text-lg leading-relaxed mb-10">
+			Ingo Wagner<br>
+			Pestalozzistraße 13<br>
+			12557 Berlin, Deutschland
+		</p>
+
+		<hr class="my-10 border-slate-200">
+		<p class="text-sm text-zinc-500 italic">
+			Hinweis: Die Domain www.emifree.com und andere Domains, über die auf dieses Impressum zugegriffen werden kann, sind rechtmäßiges Eigentum der Emifree GmbH.
+		</p>
+
+		<div class="mt-12 pt-8 border-t border-slate-200">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
+				</svg>
+				Zur Startseite
+			</a>
+		</div>
+	</article>
+	<?php
+	return (string) ob_get_clean();
+}
+
+function emifree_render_datenschutz_de_body(): string {
+	ob_start();
+	?>
+	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-2 mb-4">1. Datenschutz im Überblick</h2>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Allgemeine Informationen</h3>
+		<p class="text-lg leading-relaxed mb-6">
+			Die folgenden Hinweise geben einen einfachen Überblick darüber, was mit Ihren personenbezogenen Daten geschieht, wenn Sie diese Website besuchen. Personenbezogene Daten sind alle Daten, mit denen Sie persönlich identifiziert werden können.
+		</p>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Datenerhebung auf unserer Website</h3>
+		<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">
+			<li>
+				<strong>Wer ist für die Datenerhebung auf dieser Website verantwortlich?</strong> Die Datenverarbeitung auf dieser Website erfolgt durch den Websitebetreiber: Emifree GmbH Produktion von Filteranlagen, Pestalozzistraße 13, 12557 Berlin, Deutschland. E-Mail: <a href="mailto:info@emifree.com" class="text-blue-700 hover:text-blue-800">info@emifree.com</a>.
+			</li>
+			<li>
+				<strong>Wie erheben wir Ihre Daten?</strong> Zum einen werden Ihre Daten erhoben, wenn Sie uns diese zur Verfügung stellen (z. B. durch Eingabe in ein Kontaktformular, im Live-Chat oder bei der Anmeldung zum Newsletter). Andere Daten werden automatisch oder auf Grundlage Ihrer Einwilligung erfasst, wenn Sie die Website über unsere IT-Systeme besuchen (z. B. IP-Adresse, Browsertyp, Zeitpunkt des Seitenaufrufs).
+			</li>
+			<li>
+				<strong>Wofür verwenden wir Ihre Daten?</strong> Ein Teil der Daten wird erfasst, um die fehlerfreie Bereitstellung der Website zu gewährleisten. Andere Daten können zur Analyse des Nutzerverhaltens oder zur Bereitstellung von Kundensupportkanälen (wie z. B. Live-Chat) verwendet werden.
+			</li>
+		</ul>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-12 mb-4">2. Allgemeine Hinweise und Pflichtangaben</h2>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Rechtsgrundlage für die Verarbeitung</h3>
+		<p class="text-lg leading-relaxed mb-4">
+			Wir verarbeiten personenbezogene Daten gemäß der DSGVO (Datenschutz-Grundverordnung) und dem deutschen TDDDG:
+		</p>
+		<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">
+			<li><strong>Einwilligung (Art. 6 Abs. 1 Buchstabe a DSGVO):</strong> Für bestimmte Zwecke (z. B. Tracking-Cookies, Newsletter-Abonnement, Live-Chat-Funktion) verarbeiten wir Daten erst nach Einholung Ihrer ausdrücklichen Einwilligung.</li>
+			<li><strong>Erfüllung eines Vertrags oder vorvertraglicher Maßnahmen (Art. 6 Abs. 1 Buchstabe b DSGVO):</strong> Wenn die Verarbeitung zur Erfüllung eines Vertrags, dessen Vertragspartei Sie sind, oder zur Durchführung von Maßnahmen auf Ihren Wunsch hin vor Abschluss eines Vertrags erforderlich ist (B2B-Anfragen).</li>
+			<li><strong>Rechtliche Verpflichtung (Art. 6 Abs. 1 Buchstabe c DSGVO):</strong> Wenn wir einer rechtlichen Verpflichtung unterliegen (z. B. Dokumentation der Einwilligungsentscheidungen zu Cookies).</li>
+			<li><strong>Berechtigte Interessen (Art. 6 Abs. 1 Buchstabe f DSGVO):</strong> Zur Wahrung unserer berechtigten geschäftlichen Interessen (z. B. Aufrechterhaltung der technischen Stabilität der Website, IT-Sicherheit).</li>
+		</ul>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Ihre Rechte als betroffene Person</h3>
+		<p class="text-lg leading-relaxed mb-4">
+			Gemäß den geltenden gesetzlichen Bestimmungen haben Sie jederzeit folgende Rechte in Bezug auf Ihre personenbezogenen Daten:
+		</p>
+		<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">
+			<li><strong>Auskunftsrecht (Art. 15 DSGVO):</strong> Sie haben das Recht, unentgeltlich Auskunft über die Herkunft, die Empfänger und den Zweck Ihrer gespeicherten personenbezogenen Daten zu erhalten.</li>
+			<li><strong>Recht auf Berichtigung (Art. 16 DSGVO) oder Löschung (Art. 17 DSGVO):</strong> Sie können die Berichtigung unrichtiger Daten oder die Löschung Ihrer Daten verlangen.</li>
+			<li><strong>Recht auf Einschränkung der Verarbeitung (Art. 18 DSGVO):</strong> Sie haben das Recht, die Einschränkung der Verarbeitung Ihrer Daten zu verlangen.</li>
+			<li><strong>Recht auf Datenübertragbarkeit (Art. 20 DSGVO):</strong> Sie können verlangen, dass wir Ihre Daten in einem gängigen, maschinenlesbaren Format an Sie oder einen Dritten übergeben.</li>
+			<li><strong>Widerrufsrecht (Art. 7 Abs. 3 DSGVO):</strong> Viele Datenverarbeitungsvorgänge sind nur mit Ihrer ausdrücklichen Einwilligung möglich. Sie können eine bereits erteilte Einwilligung jederzeit mit Wirkung für die Zukunft widerrufen.</li>
+			<li><strong>Beschwerderecht (Art. 77 DSGVO):</strong> Im Falle von Datenschutzverstößen haben Sie das Recht, sich bei der zuständigen Datenschutz-Aufsichtsbehörde zu beschweren.</li>
+		</ul>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-12 mb-4">3. Einwilligungsmanagement und Plugins</h2>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Cookiebot</h3>
+		<p class="text-lg leading-relaxed mb-6">
+			Wir verwenden das Einwilligungsmanagement-Tool „Cookiebot" der Usercentrics A/S (Havnegade 39, 1058 Kopenhagen, Dänemark).
+		</p>
+		<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">
+			<li><strong>Zweck:</strong> Cookiebot wird verwendet, um Ihre Einwilligung zur Speicherung bestimmter Cookies auf Ihrem Endgerät einzuholen und diese gemäß den Datenschutzbestimmungen zu dokumentieren.</li>
+			<li><strong>Rechtsgrundlage:</strong> Die Verarbeitung erfolgt zur Erfüllung einer rechtlichen Verpflichtung gemäß Art. 6 Abs. 1 Buchstabe c DSGVO in Verbindung mit § 25 Abs. 1 TDDDG.</li>
+			<li><strong>Gespeicherte Daten:</strong> Beim Aufruf unserer Website wird ein Cookiebot-Cookie („CookieConsent") in Ihrem Browser gespeichert, das Ihre Einwilligung oder deren Widerruf dokumentiert. Diese Daten werden gespeichert, bis Sie das Cookie löschen oder der Zweck der Datenspeicherung entfällt.</li>
+		</ul>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Tawk.to (Live-Chat)</h3>
+		<p class="text-lg leading-relaxed mb-6">
+			Wir verwenden Live-Chat-Software der tawk.to inc. (101 Hunter Avenue, Suite 102, Cary, NC 27511, USA).
+		</p>
+		<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">
+			<li><strong>Zweck:</strong> Der Live-Chat ermöglicht eine schnelle, direkte Kommunikation mit unseren B2B-Kunden und Interessenten.</li>
+			<li><strong>Rechtsgrundlage:</strong> Tawk.to wird ausschließlich auf Grundlage Ihrer ausdrücklichen Einwilligung gemäß Art. 6 Abs. 1 Buchstabe a DSGVO verwendet. Das Chat-Widget wird erst geladen und es werden keine Daten übertragen, wenn Sie Ihre Einwilligung über das Cookiebot-Banner erteilt haben.</li>
+			<li><strong>Verarbeitete Daten:</strong> Bei der Nutzung des Chats werden technische Infrastrukturdaten (IP-Adresse, Browsertyp, Betriebssystem, geografische Region, Besuchsdauer) sowie die von Ihnen eingegebenen Chat-Inhalte (z. B. Name, E-Mail-Adresse, Nachrichten) verarbeitet.</li>
+			<li><strong>Drittlandtransfer:</strong> Die Daten werden an Server von tawk.to in den USA übertragen. Da tawk.to Daten außerhalb der EU verarbeitet, wurden Standardvertragsklauseln (SCC) implementiert, um ein angemessenes Datenschutzniveau zu gewährleisten.</li>
+			<li><strong>Widerruf:</strong> Sie können Ihre Einwilligung jederzeit über den Cookiebot-Einstellungslink auf unserer Website anpassen oder widerrufen.</li>
+		</ul>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Google Analytics</h3>
+		<p class="text-lg leading-relaxed mb-6">
+			Wir verwenden Google Analytics, einen Webanalysedienst der Google Ireland Limited (Gordon House, Barrow Street, Dublin 4, Irland).
+		</p>
+		<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">
+			<li><strong>Zweck:</strong> Analyse der Website-Nutzung zur Gestaltung und Optimierung unseres B2B-Online-Auftritts.</li>
+			<li><strong>Rechtsgrundlage:</strong> Die Nutzung erfolgt ausschließlich nach Ihrer ausdrücklichen Einwilligung gemäß Art. 6 Abs. 1 Buchstabe a DSGVO und § 25 Abs. 1 TDDDG.</li>
+			<li><strong>IP-Anonymisierung:</strong> Wir setzen Google Analytics ausschließlich mit aktivierter IP-Anonymisierung ein, d. h. Ihre IP-Adresse wird von Google innerhalb von EU-Mitgliedstaaten vor der Übertragung gekürzt.</li>
+			<li><strong>Datenübertragung:</strong> Die von Ihrem Browser übermittelte IP-Adresse wird im Rahmen von Google Analytics nicht mit anderen Google-Daten zusammengeführt. Daten können an die Google LLC in den USA übertragen werden (zertifiziert nach dem EU-US Data Privacy Framework).</li>
+		</ul>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-12 mb-4">4. Newsletter und Kontaktformulare</h2>
+
+		<h3 class="text-xl font-semibold text-zinc-900 mt-8 mb-3">Newsletter-Daten</h3>
+		<p class="text-lg leading-relaxed mb-6">
+			Wenn Sie den auf der Website angebotenen Newsletter erhalten möchten, benötigen wir von Ihnen eine E-Mail-Adresse sowie Informationen, die uns die Überprüfung ermöglichen, dass Sie der Inhaber der angegebenen E-Mail-Adresse sind.
+		</p>
+		<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">
+			<li><strong>Tracking:</strong> Mit der Registrierung willigen Sie ein, dass wir Ihr Klickverhalten auf Links im Newsletter in anonymisierter / pseudonymisierter Form analysieren, um die Inhalte optimal auf unsere gewerbliche Kundschaft zuzuschneiden.</li>
+			<li><strong>Rechtsgrundlage:</strong> Art. 6 Abs. 1 Buchstabe a DSGVO (Einwilligung).</li>
+			<li><strong>Widerruf:</strong> Sie können Ihre Einwilligung zur Speicherung der Daten, der E-Mail-Adresse und deren Nutzung zum Versand des Newsletters jederzeit über den „Abmelden"-Link im Newsletter widerrufen.</li>
+		</ul>
+
+		<div class="mt-12 pt-8 border-t border-slate-200">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
+				</svg>
+				Zur Startseite
+			</a>
+		</div>
+	</article>
+	<?php
+	return (string) ob_get_clean();
+}
+
+function emifree_render_agb_de_body(): string {
+	ob_start();
+	?>
+	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
+		<p class="text-lg leading-relaxed mb-6">
+			<strong>Emifree GmbH Produktion von Filteranlagen</strong> Pestalozzistraße 13, 12557 Berlin, Deutschland<br>
+			Telefon: +49 3076283520 | E-Mail: info@emifree.com
+		</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 1 Geltungsbereich &amp; B2B-Exklusivität</h2>
+		<p class="text-lg leading-relaxed mb-4">(1) Diese Allgemeinen Geschäftsbedingungen (AGB) gelten ausschließlich für alle Geschäftsbeziehungen, Lieferungen und Angebote zwischen der Emifree GmbH (im Folgenden „Verkäufer") und dem Kunden in der zum Zeitpunkt der Bestellung gültigen Fassung.</p>
+		<p class="text-lg leading-relaxed mb-4">(2) Der Katalog und der Internetauftritt des Verkäufers richten sich ausschließlich an gewerbliche Unternehmen, Händler und Unternehmer im Sinne von § 14 BGB, § 1 Abs. 2 HGB und § 15 II EStG. Kaufverträge mit privaten Verbrauchern (§ 13 BGB) sind ausdrücklich ausgeschlossen. Mit der Abgabe einer Bestellung versichert der Kunde, dass er als gewerbliches Unternehmen handelt.</p>
+		<p class="text-lg leading-relaxed mb-6">(3) Abweichende, entgegenstehende oder ergänzende Geschäftsbedingungen des Kunden werden nicht Vertragsbestandteil, es sei denn, der Verkäufer hat ihrer Geltung ausdrücklich schriftlich zugestimmt.</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 2 Vertragsabschluss</h2>
+		<p class="text-lg leading-relaxed mb-4">(1) Die Darstellung der Produkte auf der Website stellt kein rechtsverbindliches Angebot dar, sondern lediglich einen unverbindlichen Online-Katalog.</p>
+		<p class="text-lg leading-relaxed mb-4">(2) Mit der Übermittlung einer Bestellanfrage über die Website gibt der Kunde ein verbindliches Vertragsangebot im Sinne von § 145 BGB ab.</p>
+		<p class="text-lg leading-relaxed mb-4">(3) Der Vertrag kommt erst zustande, wenn der Verkäufer eine ausdrückliche schriftliche Auftragsbestätigung / Annahme per E-Mail (oder auf Wunsch per Post) versendet. Der Kunde verzichtet auf das Recht auf formellen Erhalt einer Annahmeerklärung gemäß § 151 Satz 1 BGB.</p>
+		<p class="text-lg leading-relaxed mb-4">(4) Bei Vorauszahlung (Vorkasse) kommt der Vertrag zum Zeitpunkt der Zahlungsaufforderung oder mit dem erfolgreichen Abschluss der Transaktion durch den Kunden zustande. Wird die Zahlung nicht innerhalb von 10 Tagen nach Absendung der Aufforderung geleistet, ist der Verkäufer nicht mehr an die Transaktionsaufforderung gebunden.</p>
+		<p class="text-lg leading-relaxed mb-6">(5) Weicht die veröffentlichte Warenbeschreibung von der Anfrage des Kunden ab, wird der Kunde auf mögliche Abweichungen hingewiesen und ein entsprechendes Gegenangebot unterbreitet.</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 3 Lieferung, Versandkosten, Gefahrenübergang und Prüfpflichten</h2>
+		<p class="text-lg leading-relaxed mb-4">(1) Lieferfristen gelten nur als annähernd. Auch wenn ein kalendarischer Liefertermin angegeben wird, handelt es sich dabei nicht um ein Fixhandelsgeschäft gemäß § 376 Abs. 1 HGB, es sei denn, dies wurde ausdrücklich schriftlich vereinbart.</p>
+		<p class="text-lg leading-relaxed mb-4">(2) Werden nach Vertragsabschluss Frachtkosten, Abgaben, Zölle, Steuern oder Gebühren eingeführt oder erhöht, ist der Verkäufer berechtigt, den Kaufpreis entsprechend anzupassen. Es gelten die am Tag der tatsächlichen Lieferung gültigen Preise.</p>
+		<p class="text-lg leading-relaxed mb-4">(3) Der Käufer hat sichtbare Schäden oder Fehlmengen unverzüglich nach Eintreffen auf dem Lieferschein zu vermerken und sich vom Frachtführer eine schriftliche Bestätigung einholen zu lassen. Nicht bestätigte Schäden oder Fehlmengen werden vom Verkäufer oder den Versicherern nicht anerkannt.</p>
+		<p class="text-lg leading-relaxed mb-6">(4) Der Kunde hat dem Verkäufer offensichtliche Mängel unverzüglich nach Erhalt der Ware am Bestimmungsort und versteckte Mängel unverzüglich nach ihrer Entdeckung unter Angabe einer detaillierten Beschreibung schriftlich mitzuteilen. Alle sonstigen Mängelrügen müssen innerhalb von höchstens 10 Tagen nach Erhalt per Einschreiben versandt werden.</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 4 Gewährleistung und Mängelabwicklung</h2>
+		<p class="text-lg leading-relaxed mb-4">(1) Im Falle berechtigter und fristgerechter Mängelrügen beseitigt der Verkäufer nach seiner Wahl den Mangel innerhalb einer angemessenen Frist (in der Regel innerhalb von 4 Wochen), liefert einen mangelfreien Ersatz oder gewährt eine angemessene Preisminderung.</p>
+		<p class="text-lg leading-relaxed mb-4">(2) Kommt der Verkäufer diesen Verpflichtungen innerhalb einer angemessenen Nachfrist nicht nach, kann der Kunde Preisminderung verlangen, vom Vertrag zurücktreten oder die Nachbesserung selbst oder durch Dritte auf Kosten des Verkäufers durchführen.</p>
+		<p class="text-lg leading-relaxed mb-4">(3) Handelt es sich um ein beiderseitiges Handelsgeschäft, gelten die gesetzlichen Untersuchungs- und Rügepflichten gemäß §§ 377 HGB. Handelt es sich um gebrauchte Maschinen / Waren, ist jede Sachmängelhaftung ausgeschlossen.</p>
+		<p class="text-lg leading-relaxed mb-4">(4) Eine Gewährleistung und Haftung ist ausgeschlossen für Sachmängel, die auf ungeeignete oder unsachgemäße Verwendung, fehlerhafte Montage oder Inbetriebnahme durch den Kunden oder Dritte, natürliche Abnutzung oder fahrlässige Behandlung zurückzuführen sind.</p>
+		<p class="text-lg leading-relaxed mb-6">(5) Die Rückgabe mangelfreier Ware ist grundsätzlich ausgeschlossen und bedarf der ausdrücklichen schriftlichen Zustimmung des Verkäufers. Rückgaben sind strikt auf 8 Werktage nach Lieferung begrenzt; ältere Artikel werden auf Kosten des Kunden zurückgesandt.</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 5 Eigentumsvorbehalt</h2>
+		<p class="text-lg leading-relaxed mb-4">(1) Alle gelieferten Waren bleiben bis zur vollständigen Begleichung sämtlicher aus der laufenden Geschäftsbeziehung resultierenden Forderungen Eigentum des Verkäufers, einschließlich künftiger oder bedingter Forderungen.</p>
+		<p class="text-lg leading-relaxed mb-4">(2) Der Käufer ist berechtigt, die Vorbehaltsware im ordentlichen Geschäftsgang weiter zu veräußern oder zu verarbeiten. Der Käufer tritt hiermit alle Forderungen bis zur Höhe des Rechnungsbetrages ab, die ihm aus der Weiterveräußerung an Dritte erwachsen. Der Verkäufer nimmt diese Abtretung an.</p>
+		<p class="text-lg leading-relaxed mb-4">(3) Der Käufer bleibt neben dem Verkäufer ermächtigt, die Forderung einzuziehen. Der Verkäufer kann diese Einzugsermächtigung widerrufen, wenn der Käufer in Zahlungsverzug gerät oder wenn seine Kreditwürdigkeit wesentlich gemindert ist.</p>
+		<p class="text-lg leading-relaxed mb-6">(4) Bei Pfändungen oder sonstigen Eingriffen Dritter in die Vorbehaltsware hat der Käufer das Eigentum des Verkäufers anzuzeigen und diesen unverzüglich zu benachrichtigen. Der Käufer trägt alle Interventionskosten.</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 6 Haftungsbeschränkung &amp; Verjährung</h2>
+		<p class="text-lg leading-relaxed mb-4">(1) Der Verkäufer haftet uneingeschränkt für Vorsatz und grobe Fahrlässigkeit sowie für schuldhaft verursachte Verletzungen des Lebens, des Körpers oder der Gesundheit.</p>
+		<p class="text-lg leading-relaxed mb-4">(2) Bei einfach fahrlässiger Verletzung wesentlicher Vertragspflichten (Kardinalpflichten) ist die Haftung des Verkäufers auf typische, vorhersehbare Vertragsschäden begrenzt. Eine Haftung für entgangenen Gewinn oder sonstige Folgeschäden des Kunden ist in diesen Fällen ausgeschlossen.</p>
+		<p class="text-lg leading-relaxed mb-4">(3) Eine weitergehende Haftung des Verkäufers ist, gleich aus welchem Rechtsgrund, soweit gesetzlich zulässig, ausgeschlossen.</p>
+		<p class="text-lg leading-relaxed mb-6">(4) Alle Ansprüche des Kunden – gleich aus welchem Rechtsgrund – verjähren 12 Monate nach Ablieferung oder Abnahme der Ware. Dies gilt nicht für zwingende gesetzliche Verjährungsfristen sowie für Schäden, die auf Vorsatz oder grober Fahrlässigkeit beruhen.</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 7 Vertraulichkeit</h2>
+		<p class="text-lg leading-relaxed mb-8">
+			Der Kunde ist verpflichtet, alle im Zusammenhang mit der Auftragsabwicklung erteilten Informationen, das Know-how und die Betriebsgeheimnisse streng vertraulich zu behandeln und Zeichnungen, Dokumentationen oder sonstige Unterlagen nicht ohne vorherige schriftliche Zustimmung der Emifree GmbH an Dritte weiterzugeben.
+		</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 8 Datenschutzhinweis</h2>
+		<p class="text-lg leading-relaxed mb-8">
+			Informationen zur Erhebung, Speicherung und Verarbeitung personenbezogener Daten sind nicht Bestandteil dieser Geschäftsbedingungen und werden ausschließlich und gesondert durch die <a href="/de/datenschutz" class="text-blue-700 hover:text-blue-800 underline">Datenschutzerklärung</a> des Verkäufers geregelt.
+		</p>
+
+		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 9 Anwendbares Recht, Gerichtsstand &amp; Salvatorische Klausel</h2>
+		<p class="text-lg leading-relaxed mb-4">(1) Die vertragliche Beziehung zwischen dem Verkäufer und dem Kunden unterliegt ausschließlich dem Recht der Bundesrepublik Deutschland. Die Anwendung des Übereinkommens der Vereinten Nationen über Verträge über den internationalen Warenkauf (CISG) ist ausdrücklich ausgeschlossen.</p>
+		<p class="text-lg leading-relaxed mb-4">(2) Ausschließlicher Gerichtsstand für alle sich aus oder im Zusammenhang mit diesem Vertrag ergebenden Streitigkeiten ist der Sitz des Verkäufers in <strong>Berlin</strong>, sofern der Kunde Kaufmann im Sinne des HGB, juristische Person des öffentlichen Rechts oder öffentlich-rechtliches Sondervermögen ist. Der Verkäufer ist jedoch berechtigt, am Hauptsitz des Kunden Klage zu erheben.</p>
+		<p class="text-lg leading-relaxed mb-10">(3) Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. An die Stelle der unwirksamen Bestimmung tritt eine wirksame Regelung, die dem wirtschaftlichen Zweck der unwirksamen Bestimmung am nächsten kommt.</p>
+
+		<div class="mt-12 pt-8 border-t border-slate-200">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
+				</svg>
+				Zur Startseite
 			</a>
 		</div>
 	</article>
