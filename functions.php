@@ -141,7 +141,7 @@ function emifree_route_legal_template() {
 		'agb'         => 'page-de-agb.php',
 	);
 	// German Impressum uses the same slug as English (just /de/impressum/).
-	if ( 'de' === $emifree_lang ) {
+	if ( 'de' === $emifree_lang && 'impressum' === $emifree_slug ) {
 		$emifree_template = 'page-de-impressum.php';
 	} elseif ( isset( $emifree_templates[ $emifree_slug ] ) ) {
 		$emifree_template = $emifree_templates[ $emifree_slug ];

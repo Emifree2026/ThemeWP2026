@@ -56,10 +56,10 @@ function emifree_simple_markdown_to_html( $md ) {
         if ( preg_match( '/^[-\*]\s+(.*)$/', $trim, $m ) ) {
             $flush_paragraph();
             if ( ! $in_list ) {
-                $out .= '<ul class="text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6">\n';
+                $out .= "<ul class=\"text-lg leading-relaxed mb-6 space-y-3 list-disc pl-6\">\n";
                 $in_list = true;
             }
-            $out .= '<li>' . emifree_markdown_span( $m[1] ) . '</li>\n';
+            $out .= "<li>" . emifree_markdown_span( $m[1] ) . "</li>\n";
             continue;
         }
 

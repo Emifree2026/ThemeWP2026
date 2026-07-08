@@ -6,12 +6,10 @@
 The following notes provide a simple overview of what happens to your personal data when you visit this website. Personal data is any data with which you can be personally identified.
 
 ### Data Collection on Our Website
-* **Who is responsible for data collection on this website?** The data processing on this website is carried out by the website operator:  
-    Emifree GmbH Produktion von Filteranlagen, Pestalozzistraße 13, 12557 Berlin, Germany. Email: info@emifree.com.
+* **Who is responsible for data collection on this website?** The data processing on this website is carried out by the website operator: Emifree GmbH Produktion von Filteranlagen, Pestalozzistraße 13, 12557 Berlin, Germany. Email: info@emifree.com.
 * **How do we collect your data?** On one hand, your data is collected when you provide it to us (e.g., by entering it into a contact form, live chat, or newsletter registration). Other data is collected automatically or based on your consent when you visit the website via our IT systems (e.g., IP address, browser type, time of page view).
 * **What do we use your data for?** Part of the data is collected to ensure the error-free provision of the website. Other data can be used to analyze user behavior or provide customer support channels (such as live chat).
 
----
 
 ## 2. General Notes and Mandatory Information
 
@@ -31,7 +29,6 @@ Under applicable statutory provisions, you have the following rights regarding y
 * **Withdrawal of Consent (Art. 7 (3) GDPR):** Many data processing operations are only possible with your express consent. You can withdraw consent you have already given at any time with future effect.
 * **Right to Lodge a Complaint (Art. 77 GDPR):** In the event of data protection violations, you have the right to lodge a complaint with a competent data protection supervisory authority.
 
----
 
 ## 3. Consent Management and Plugins
 
@@ -57,8 +54,6 @@ We use Google Analytics, a web analytics service provided by Google Ireland Limi
 * **Legal Basis:** Usage takes place exclusively after your explicit consent via Art. 6 (1)(a) GDPR and § 25 (1) TDDDG.
 * **IP Anonymization:** We utilize Google Analytics strictly with activated IP anonymization (IP masking), meaning your IP address is truncated by Google within EU member states before transmission.
 * **Data Transfer:** The IP address transmitted by your browser within the framework of Google Analytics will not be merged with other Google data. Data may be transferred to Google LLC in the USA (certified under the EU-US Data Privacy Framework).
-
----
 
 ## 4. Newsletters and Contact Forms
 
