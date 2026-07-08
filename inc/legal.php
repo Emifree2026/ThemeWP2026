@@ -193,6 +193,25 @@ function emifree_legal_page_de( $slug ) {
  * this single helper is preferable to three template parts.
  */
 function emifree_render_legal_body( $slug, $lang = 'en' ) {
+	// Prefer Markdown sources in assets/Legal when available. Filenames follow
+	// the pattern: impressum_en.md, impressum_de.md, privacy_policy_en.md, etc.
+	$map = array(
+		'impressum' => 'impressum',
+		'privacy'   => 'privacy_policy',
+		'terms'     => 'terms',
+		'datenschutz' => 'privacy_policy',
+		'agb'         => 'terms',
+	);
+	$base = isset( $map[ $slug ] ) ? $map[ $slug ] : $slug;
+	$md_file = get_template_directory() . '/assets/Legal/' . $base . '_' . $lang . '.md';
+	if ( file_exists( $md_file ) ) {
+		$md = file_get_contents( $md_file );
+		if ( false !== $md ) {
+			// Convert a small subset of Markdown to safe HTML for these pages.
+			$html = emifree_simple_markdown_to_html( $md );
+			return '<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">' . $html . '</article>';
+		}
+	}
 	if ( 'de' === $lang ) {
 		switch ( $slug ) {
 			case 'impressum':
@@ -479,7 +498,6 @@ function emifree_render_terms_body(): string {
 	<?php
 	return (string) ob_get_clean();
 }
-<?php
 /* -------------------------------------------------------------------------
  * German (de) page body renderers.
  *
@@ -745,3 +763,6 @@ function emifree_render_agb_de_body(): string {
 	<?php
 	return (string) ob_get_clean();
 }
+
+// Markdown helper moved to inc/markdown.php
+require_once get_template_directory() . '/inc/markdown.php';

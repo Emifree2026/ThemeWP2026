@@ -58,12 +58,48 @@ require_once get_template_directory() . '/inc/footer.php';
 						<ul class="space-y-3">
 							<?php foreach ( $emifree_col_links as $emifree_link ) : ?>
 								<li>
-									<a
-										href="<?php echo esc_url( $emifree_link['href'] ); ?>"
-										class="text-zinc-400 hover:text-white transition-colors duration-200"
-									>
-										<?php echo esc_html( $emifree_link['name'] ); ?>
-									</a>
+									<?php
+									// If link provides per-language hrefs (Legal column), emit
+									// data attributes and choose the initial href based on the
+									// site's current language so the links are language-aware.
+									if ( isset( $emifree_link['href_en'] ) ) :
+										// Prefer explicit user language stored in cookie so
+										// client-side selections survive full navigations.
+										$site_lang = 'en';
+										if ( isset( $_COOKIE['emifree_lang'] ) ) {
+											$site_lang = strtolower( sanitize_text_field( wp_unslash( $_COOKIE['emifree_lang'] ) ) );
+										} else {
+											$site_lang = strtolower( substr( get_bloginfo( 'language' ), 0, 2 ) );
+										}
+										$initial_href = ( 'de' === $site_lang ) ? $emifree_link['href_de'] : $emifree_link['href_en'];
+										?>
+										<?php
+											// Decide which label to render server-side. Prefer cookie, then site language.
+											$link_label = '';
+											if ( 'de' === $site_lang && ! empty( $emifree_link['name_de'] ) ) {
+												$link_label = $emifree_link['name_de'];
+											} elseif ( ! empty( $emifree_link['name_en'] ) ) {
+												$link_label = $emifree_link['name_en'];
+											} elseif ( ! empty( $emifree_link['name'] ) ) {
+												$link_label = $emifree_link['name'];
+											}
+										?>
+										<a
+										href="<?php echo esc_url( $initial_href ); ?>"
+										class="text-zinc-400 hover:text-white transition-colors duration-200 emifree-legal-link"
+										data-href-en="<?php echo esc_attr( $emifree_link['href_en'] ); ?>"
+										data-href-de="<?php echo esc_attr( $emifree_link['href_de'] ); ?>"
+										>
+											<?php echo esc_html( $link_label ); ?>
+										</a>
+										<?php else : ?>
+										<a
+											href="<?php echo esc_url( $emifree_link['href'] ); ?>"
+											class="text-zinc-400 hover:text-white transition-colors duration-200"
+										>
+											<?php echo esc_html( $emifree_link['name'] ); ?>
+										</a>
+									<?php endif; ?>
 								</li>
 							<?php endforeach; ?>
 						</ul>

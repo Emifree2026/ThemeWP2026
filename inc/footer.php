@@ -30,11 +30,11 @@ if ( ! function_exists( 'emifree_footer_links' ) ) :
 			'Resources' => array(
 				array( 'name' => 'Case Studies', 'href' => '/#knowledge' ),
 			),
-			'Legal'     => array(
-				array( 'name' => 'Impressum',            'href' => '/impressum' ),
-				array( 'name' => 'Privacy Policy',       'href' => '/privacy' ),
-				array( 'name' => 'General Terms (GTC)',  'href' => '/terms' ),
-			),
+			    'Legal'     => array(
+				    array( 'name_en' => 'Imprint',              'name_de' => 'Impressum',            'href_en' => '/impressum',              'href_de' => '/de/impressum' ),
+				    array( 'name_en' => 'Privacy Policy',       'name_de' => 'Datenschutz',          'href_en' => '/privacy',                'href_de' => '/de/datenschutz' ),
+				    array( 'name_en' => 'General Terms (GTC)',  'name_de' => 'AGB',                  'href_en' => '/terms',                  'href_de' => '/de/agb' ),
+			    ),
 		);
 	}
 endif;

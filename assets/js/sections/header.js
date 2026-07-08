@@ -118,6 +118,47 @@
 	const emifreeLangMenu    = document.getElementById( 'emifree-lang-menu' );
 	const emifreeLangLabel   = document.getElementById( 'emifree-lang-label' );
 
+	// Persisted language key in localStorage
+	const EMIFREE_LANG_KEY = 'emifree_lang';
+
+	function emifreeApplyStoredLang() {
+		try {
+			let stored = localStorage.getItem( EMIFREE_LANG_KEY );
+				// If localStorage is empty, fall back to cookie set on previous selection.
+				if ( ! stored ) {
+					try {
+						const m = document.cookie.match( new RegExp('(?:^|; )' + EMIFREE_LANG_KEY + '=([^;]+)') );
+						if ( m && m[1] ) {
+							stored = decodeURIComponent( m[1] );
+						}
+					} catch ( e ) { /* ignore */ }
+				}
+			if ( stored ) {
+				// Normalize code to upper-case label used in UI (EN/DE)
+				const code = String( stored ).toUpperCase();
+				if ( emifreeLangLabel ) {
+					emifreeLangLabel.textContent = code;
+				}
+				// Update footer links and mobile pills
+				emifreeUpdateFooterLegalLinks( code );
+				document.querySelectorAll( '.emifree-mobile-lang' ).forEach( ( pill ) => {
+					const pillCode = pill.getAttribute( 'data-emifree-mobile-lang' );
+					const isActive = pillCode && pillCode.toLowerCase() === String( stored ).toLowerCase();
+					pill.classList.toggle( 'bg-blue-700', isActive );
+					pill.classList.toggle( 'text-white', isActive );
+					pill.classList.toggle( 'bg-slate-100', ! isActive );
+					pill.classList.toggle( 'text-zinc-700', ! isActive );
+					pill.classList.toggle( 'hover:bg-slate-200', ! isActive );
+				} );
+			}
+		} catch ( e ) {
+			// ignore storage errors
+		}
+	}
+
+	// Apply stored language immediately on load
+	emifreeApplyStoredLang();
+
 	if ( emifreeLangBtn && emifreeLangMenu ) {
 		emifreeLangBtn.addEventListener( 'click', ( e ) => {
 			e.stopPropagation();
@@ -137,10 +178,34 @@
 				if ( emifreeLangLabel && emifreeCode ) {
 					emifreeLangLabel.textContent = emifreeCode;
 				}
+					// Persist and update footer links to the selected language
+					try { localStorage.setItem( EMIFREE_LANG_KEY, String( emifreeCode ).toLowerCase() ); } catch ( e ) {}
+					try { document.cookie = EMIFREE_LANG_KEY + '=' + encodeURIComponent( String( emifreeCode ).toLowerCase() ) + '; path=/; max-age=' + (60*60*24*30); } catch ( e ) {}
+					emifreeUpdateFooterLegalLinks( emifreeCode );
 				emifreeLangMenu.classList.add( 'hidden' );
 				emifreeLangBtn.setAttribute( 'aria-expanded', 'false' );
 			} );
 		} );
+
+			// Update footer legal links to match selected language
+			function emifreeUpdateFooterLegalLinks( code ) {
+				if ( ! code ) {
+					return;
+				}
+				const emifreeTarget = document.querySelectorAll( '.emifree-legal-link' );
+				emifreeTarget.forEach( ( el ) => {
+					const hrefEn = el.dataset.hrefEn;
+					const hrefDe = el.dataset.hrefDe;
+					if ( ! hrefEn || ! hrefDe ) {
+						return;
+					}
+					if ( String( code ).toLowerCase() === 'de' ) {
+						el.setAttribute( 'href', hrefDe );
+					} else {
+						el.setAttribute( 'href', hrefEn );
+					}
+				} );
+			}
 
 		// Mobile menu language pills — visually highlight the active pill
 		// and sync the desktop label so both stay in lockstep. Real i18n
@@ -163,6 +228,10 @@
 				if ( emifreeLangLabel ) {
 					emifreeLangLabel.textContent = emifreeCode;
 				}
+					// Persist and update footer links to the selected language
+					try { localStorage.setItem( EMIFREE_LANG_KEY, String( emifreeCode ).toLowerCase() ); } catch ( e ) {}
+					try { document.cookie = EMIFREE_LANG_KEY + '=' + encodeURIComponent( String( emifreeCode ).toLowerCase() ) + '; path=/; max-age=' + (60*60*24*30); } catch ( e ) {}
+					emifreeUpdateFooterLegalLinks( emifreeCode );
 			} );
 		} );
 

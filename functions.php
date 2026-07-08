@@ -133,16 +133,16 @@ function emifree_route_legal_template() {
 	}
 	$emifree_templates = array(
 		// English
-		'impressum'   => 'page-impressum',
-		'privacy'     => 'page-privacy',
-		'terms'       => 'page-terms',
+		'impressum'   => 'page-impressum.php',
+		'privacy'     => 'page-privacy.php',
+		'terms'       => 'page-terms.php',
 		// German
-		'datenschutz' => 'page-de-datenschutz',
-		'agb'         => 'page-de-agb',
+		'datenschutz' => 'page-de-datenschutz.php',
+		'agb'         => 'page-de-agb.php',
 	);
 	// German Impressum uses the same slug as English (just /de/impressum/).
 	if ( 'de' === $emifree_lang ) {
-		$emifree_template = 'page-de-impressum';
+		$emifree_template = 'page-de-impressum.php';
 	} elseif ( isset( $emifree_templates[ $emifree_slug ] ) ) {
 		$emifree_template = $emifree_templates[ $emifree_slug ];
 	} else {
