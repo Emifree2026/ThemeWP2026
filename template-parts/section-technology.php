@@ -152,7 +152,7 @@ $emifree_technologies = emifree_technologies();
 
 		<?php /* ----- Block 4: CTA Section ----- */ ?>
 		<div class="px-0 py-0">
-			<div class="max-w-4xl mx-auto bg-gradient-to-br from-blue-50 to-slate-100 rounded-3xl shadow-xl p-8 md:p-12 text-center">
+			<div class="max-w-4xl mx-auto rounded-3xl shadow-xl p-8 md:p-12 text-center bg-blue-50">
 				<h3 class="text-3xl md:text-4xl font-bold text-slate-900">
 					Not sure which filtration technology fits your application?
 				</h3>
