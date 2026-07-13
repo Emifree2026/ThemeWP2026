@@ -17,6 +17,10 @@ if ( ! defined( 'EMIFREE_THEME_VERSION' ) ) {
 	define( 'EMIFREE_THEME_VERSION', '1.0.0' );
 }
 
+// Bilingual helpers (emifree_get_lang + emifree_require_section_data).
+// Loaded unconditionally so any function in this file can use them.
+require_once get_template_directory() . '/inc/i18n.php';
+
 /**
  * Enqueue built stylesheet (assets/css/main.css, committed to the repo so
  * the theme is install-and-go). Also enqueues per-section JS files.
@@ -187,16 +191,18 @@ add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
  * unified flush from firing.
  */
 function emifree_maybe_flush_section_routes() {
-	if ( get_transient( 'emifree_section_routes_flushed_v3' ) ) {
+	if ( get_transient( 'emifree_section_routes_flushed_v4' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
+	emifree_register_de_homepage_route();
 	flush_rewrite_rules( false );
 	delete_transient( 'emifree_legal_routes_flushed' );
 	delete_transient( 'emifree_section_routes_flushed' );
 	delete_transient( 'emifree_section_routes_flushed_v2' );
-	set_transient( 'emifree_section_routes_flushed_v3', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_section_routes_flushed_v3' );
+	set_transient( 'emifree_section_routes_flushed_v4', 1, DAY_IN_SECONDS );
 }
 add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
 
@@ -220,6 +226,91 @@ function emifree_register_blog_route() {
 	);
 }
 add_action( 'init', 'emifree_register_blog_route' );
+
+/**
+ * German homepage route — /de/ (or /de).
+ *
+ * Dispatches to front-page-de.php which composes the German version of
+ * the homepage from the same section template parts. Each template part
+ * loads the active language's data file via emifree_require_section_data()
+ * (see inc/i18n.php), so German content is selected when the emifree_lang
+ * cookie is set to 'de'.
+ *
+ * Note: this registers /de/ as a SEPARATE route — the German homepage
+ * serves even if the user's cookie is unset. We deliberately don't tie
+ * the German route to a cookie: the language switcher sets the cookie
+ * AND navigates, but a user who lands on /de/ directly (e.g. via a
+ * Google search) sees German regardless of any saved preference.
+ */
+function emifree_register_de_homepage_route() {
+	add_rewrite_rule(
+		'^de/?$',
+		'index.php?emifree_homepage_lang=de',
+		'top'
+	);
+}
+add_action( 'init', 'emifree_register_de_homepage_route' );
+
+function emifree_register_homepage_lang_query_var( $vars ) {
+	$vars[] = 'emifree_homepage_lang';
+	return $vars;
+}
+add_filter( 'query_vars', 'emifree_register_homepage_lang_query_var' );
+
+/**
+ * Dispatch /de/ to front-page-de.php. The default front-page.php
+ * (English homepage) continues to handle /. Cookie-based language
+ * detection inside the templates picks the right strings regardless.
+ */
+function emifree_route_de_homepage_template() {
+	if ( 'de' !== get_query_var( 'emifree_homepage_lang' ) ) {
+		return;
+	}
+	$emifree_target = locate_template( 'front-page-de.php' );
+	if ( ! $emifree_target ) {
+		// front-page-de.php not yet built — fall back to the
+		// English homepage so /de/ at least serves content rather
+		// than 404'ing. Will be replaced once front-page-de.php
+		// lands (Piece B2).
+		$emifree_target = locate_template( 'front-page.php' );
+	}
+	add_filter(
+		'template_include',
+		static function ( $template ) use ( $emifree_target ) {
+			return $emifree_target ? $emifree_target : $template;
+		}
+	);
+}
+add_action( 'template_redirect', 'emifree_route_de_homepage_template' );
+
+/**
+ * Language-aware Header dispatcher.
+ *
+ * When the active language is German (emifree_lang cookie = 'de'),
+ * every page that loads header.php via get_header() should instead
+ * load header-de.php. We do this at template_include time by mapping
+ * the resolved template to the German sibling.
+ *
+ * This avoids needing to modify every page template to call
+ * get_header('de') — the dispatcher does it once, globally.
+ *
+ * Note: header-de.php is provided by the user (data file mirror of
+ * header.php with German strings).
+ */
+function emifree_route_de_header_template( $template ) {
+	if ( 'de' !== emifree_get_lang() ) {
+		return $template;
+	}
+	// Only swap for the active theme's header.php (not third-party
+	// plugin templates). The basename check handles that.
+	$emifree_base = basename( $template );
+	if ( 'header.php' !== $emifree_base ) {
+		return $template;
+	}
+	$emifree_de_header = locate_template( 'header-de.php' );
+	return $emifree_de_header ? $emifree_de_header : $template;
+}
+add_filter( 'template_include', 'emifree_route_de_header_template' );
 
 function emifree_register_blog_query_var( $vars ) {
 	$vars[] = 'emifree_blog';

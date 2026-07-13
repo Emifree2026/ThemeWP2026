@@ -12,7 +12,8 @@
  * - No gradient text on the heading (the React cleanup).
  */
 
-require_once get_template_directory() . '/inc/footer.php';
+require_once get_template_directory() . '/inc/i18n.php';
+emifree_require_section_data( 'footer' );
 ?>
 
 <footer class="bg-zinc-900 text-white">

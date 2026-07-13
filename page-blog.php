@@ -9,7 +9,7 @@
  * same meta via wp_head callbacks so the markup is server-rendered.
  */
 
-require_once get_template_directory() . '/inc/seo.php';
+require_once get_template_directory() . '/inc/i18n.php';
 
 /**
  * Per-page SEO registration. Mirrors the React's useEffect in

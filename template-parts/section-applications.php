@@ -7,7 +7,8 @@
  * — no external icon library required for WordPress.
  */
 
-require_once get_template_directory() . '/inc/applications.php';
+require_once get_template_directory() . '/inc/i18n.php';
+emifree_require_section_data( 'applications' );
 ?>
 
 <section id="applications" class="py-12 md:py-24 bg-white">

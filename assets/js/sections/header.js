@@ -184,6 +184,24 @@
 					emifreeUpdateFooterLegalLinks( emifreeCode );
 				emifreeLangMenu.classList.add( 'hidden' );
 				emifreeLangBtn.setAttribute( 'aria-expanded', 'false' );
+
+				// Navigate to the equivalent page in the chosen language.
+				// For DE: add /de/ prefix if not already there.
+				// For EN: strip /de/ prefix if present.
+				const emifreeLangLower = String( emifreeCode ).toLowerCase();
+				const emifreeCurPath = window.location.pathname;
+				let emifreeTargetPath = emifreeCurPath;
+				if ( 'de' === emifreeLangLower ) {
+					if ( ! emifreeCurPath.startsWith( '/de' ) ) {
+						emifreeTargetPath = '/de' + ( emifreeCurPath === '/' ? '/' : emifreeCurPath );
+					}
+				} else {
+					// English
+					emifreeTargetPath = emifreeCurPath.replace( /^\/de/, '' ) || '/';
+				}
+				if ( emifreeTargetPath !== emifreeCurPath ) {
+					window.location.href = emifreeTargetPath;
+				}
 			} );
 		} );
 

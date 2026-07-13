@@ -18,7 +18,8 @@
  * #contact when the future Inquiry modal (Piece 10) hasn't shipped.
  */
 
-require_once get_template_directory() . '/inc/contact.php';
+require_once get_template_directory() . '/inc/i18n.php';
+emifree_require_section_data( 'contact' );
 emifree_enqueue_contact_script();
 
 $emifree_contact_icons = emifree_contact_icons();

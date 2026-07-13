@@ -9,7 +9,8 @@
  * when this section template is loaded.
  */
 
-require_once get_template_directory() . '/inc/products.php';
+require_once get_template_directory() . '/inc/i18n.php';
+emifree_require_section_data( 'products' );
 emifree_enqueue_section_script( 'products' );
 ?>
 

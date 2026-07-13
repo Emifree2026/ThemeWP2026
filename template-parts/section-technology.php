@@ -11,7 +11,8 @@
  * functions.php when this section template is loaded.
  */
 
-require_once get_template_directory() . '/inc/technology.php';
+require_once get_template_directory() . '/inc/i18n.php';
+emifree_require_section_data( 'technology' );
 emifree_enqueue_section_script( 'technology' );
 
 $emifree_tech_uri = get_template_directory_uri() . '/assets/tech/';

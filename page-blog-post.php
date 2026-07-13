@@ -15,8 +15,9 @@
  *  - Renders the template part inside get_header() / get_footer().
  */
 
-require_once get_template_directory() . '/inc/seo.php';
-require_once get_template_directory() . '/inc/knowledge.php';
+require_once get_template_directory() . '/inc/i18n.php';
+emifree_require_section_data( 'knowledge' );
+emifree_require_section_data( 'blog-cards' );
 
 $emifree_requested_slug = get_query_var( 'emifree_blog_slug' );
 $emifree_current_post  = $emifree_requested_slug ? emifree_get_post_by_slug( $emifree_requested_slug ) : null;

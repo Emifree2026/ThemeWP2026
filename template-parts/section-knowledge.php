@@ -23,8 +23,9 @@
  * commit — known-limited, fixed in Pieces 15 + 16 + 9 respectively.
  */
 
-require_once get_template_directory() . '/inc/knowledge.php';
-require_once get_template_directory() . '/inc/blog-cards.php';
+require_once get_template_directory() . '/inc/i18n.php';
+emifree_require_section_data( 'knowledge' );
+emifree_require_section_data( 'blog-cards' );
 emifree_enqueue_section_script( 'knowledge' );
 
 $emifree_knowledge_icons   = emifree_knowledge_icons();
