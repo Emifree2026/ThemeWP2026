@@ -27,26 +27,28 @@ get_header();
 ?>
 
 <main>
-	<?php get_template_part( 'template-parts/section', 'hero' ); ?>
-
-	<?php if ( locate_template( 'template-parts/section-applications.php' ) ) : ?>
-		<?php get_template_part( 'template-parts/section', 'applications' ); ?>
+	<?php if ( locate_template( 'template-parts/section-hero-de.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'hero-de' ); ?>
 	<?php endif; ?>
 
-	<?php if ( locate_template( 'template-parts/section-products.php' ) ) : ?>
-		<?php get_template_part( 'template-parts/section', 'products' ); ?>
+	<?php if ( locate_template( 'template-parts/section-applications-de.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'applications-de' ); ?>
 	<?php endif; ?>
 
-	<?php if ( locate_template( 'template-parts/section-technology.php' ) ) : ?>
-		<?php get_template_part( 'template-parts/section', 'technology' ); ?>
+	<?php if ( locate_template( 'template-parts/section-products-de.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'products-de' ); ?>
 	<?php endif; ?>
 
-	<?php if ( locate_template( 'template-parts/section-knowledge.php' ) ) : ?>
-		<?php get_template_part( 'template-parts/section', 'knowledge' ); ?>
+	<?php if ( locate_template( 'template-parts/section-technology-de.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'technology-de' ); ?>
 	<?php endif; ?>
 
-	<?php if ( locate_template( 'template-parts/section-contact.php' ) ) : ?>
-		<?php get_template_part( 'template-parts/section', 'contact' ); ?>
+	<?php if ( locate_template( 'template-parts/section-knowledge-de.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'knowledge-de' ); ?>
+	<?php endif; ?>
+
+	<?php if ( locate_template( 'template-parts/section-contact-de.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'contact-de' ); ?>
 	<?php endif; ?>
 </main>
 

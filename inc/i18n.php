@@ -1,23 +1,22 @@
 <?php
 /**
- * Emifree theme — bilingual helpers (English / German).
+ * i18n.php — kept as a no-op shim for the English section templates.
  *
- * The active language is read from the `emifree_lang` cookie, which is
- * set by the Header's EN/DE switcher. Defaults to 'en' if the cookie
- * is absent.
+ * The previous bilingual architecture (function guards, dispatcher,
+ * emifree_call() helper) was replaced with a hard-separated approach:
+ *   - English homepage (/) uses section-{name}.php + inc/{name}.php
+ *   - German homepage (/de/) uses section-{name}-de.php with strings
+ *     inlined directly into the template — no data loader required.
  *
- * Section templates load bilingual data via:
+ * The German data files (inc/{name}_de.php) and the German blog-cards
+ * file were deleted alongside this shim. inc/i18n.php is kept so
+ * existing English section templates continue to work unchanged:
+ * their `emifree_require_section_data( $slug )` call still resolves to
+ * inc/{slug}.php (English) — never to a deleted _de file.
  *
- *     emifree_require_section_data( 'hero' );
- *
- *     // Then the section's functions are available:
- *     // emifree_hero_data() returns an array, OR
- *     // the file defines top-level constants / functions.
- *
- * The German data file pattern (per the user's technology_de.php
- * example): a sibling file `inc/{slug}-de.php` that exposes the same
- * functions as the English file, with German content. The helper
- * loads the German file when active, otherwise English.
+ * If a future piece wants to delete this file too, grep for
+ * emifree_require_section_data across template-parts/section-*.php
+ * and replace those calls with direct `require_once` of inc/{slug}.php.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -25,49 +24,20 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
- * Get the active site language code ('en' or 'de').
+ * Load the English data file for a section. Always English; the German
+ * sections are fully self-contained and don't call this helper.
  *
- * Read from the emifree_lang cookie set by the Header language
- * switcher. Falls back to 'en' if absent or unrecognized.
- */
-function emifree_get_lang() {
-	if ( ! isset( $_COOKIE['emifree_lang'] ) ) {
-		return 'en';
-	}
-	$emifree_raw = strtolower( sanitize_text_field( wp_unslash( $_COOKIE['emifree_lang'] ) ) );
-	return in_array( $emifree_raw, array( 'en', 'de' ), true ) ? $emifree_raw : 'en';
-}
-
-/**
- * Load a section's data file for the active language.
- *
- * Tries `inc/{slug}-de.php` when active language is German AND that
- * file exists, otherwise `inc/{slug}.php` (English). Each file is
- * expected to define the same set of top-level functions (or
- * constants) — the difference is just the strings they return.
- *
- * Use this at the top of a section template:
- *
- *     require_once get_template_directory() . '/inc/i18n.php';
- *     emifree_require_section_data( 'applications' );
- *     $icons = emifree_application_icons();
+ * @param string $slug Section slug (e.g. 'hero', 'applications').
  */
 function emifree_require_section_data( $slug ) {
-	$emifree_active = emifree_get_lang();
-	$emifree_base    = get_template_directory() . '/inc/';
-	$emifree_chosen  = $emifree_base . $slug . '.php';
-	if ( 'de' === $emifree_active && file_exists( $emifree_base . $slug . '-de.php' ) ) {
-		$emifree_chosen = $emifree_base . $slug . '-de.php';
+	$emifree_path = get_template_directory() . '/inc/' . $slug . '.php';
+	if ( file_exists( $emifree_path ) ) {
+		require_once $emifree_path;
 	}
-	require_once $emifree_chosen;
 }
 
 /**
- * Conditional include for the homepage dispatch path.
- *
- * Used by front-page.php to optionally load the German hero variant
- * when active. Falls back to English. Returns nothing; just loads
- * the file.
+ * Legacy alias — kept for any code that still calls the old name.
  */
 function emifree_require_hero_data() {
 	emifree_require_section_data( 'hero' );

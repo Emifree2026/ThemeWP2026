@@ -17,9 +17,27 @@ if ( ! defined( 'EMIFREE_THEME_VERSION' ) ) {
 	define( 'EMIFREE_THEME_VERSION', '1.0.0' );
 }
 
-// Bilingual helpers (emifree_get_lang + emifree_require_section_data).
-// Loaded unconditionally so any function in this file can use them.
+// i18n.php shim — kept so the English section templates continue to
+// work unchanged. The bilingual dispatcher (emifree_get_lang +
+// function-guard approach) was retired; the German templates inline
+// their own data. See inc/i18n.php for the full rationale.
 require_once get_template_directory() . '/inc/i18n.php';
+
+/**
+ * Get the active site language code ('en' or 'de') for the Header
+ * dispatcher. Reads the emifree_lang cookie set by the language
+ * switcher; defaults to 'en'. Path-based detection (/de/) is the
+ * responsibility of emifree_route_de_homepage_template() — by the
+ * time we get here the active template is already front-page-de.php
+ * or page-de-*.php, so the cookie is usually set.
+ */
+function emifree_get_lang() {
+	if ( ! isset( $_COOKIE['emifree_lang'] ) ) {
+		return 'en';
+	}
+	$emifree_raw = strtolower( sanitize_text_field( wp_unslash( $_COOKIE['emifree_lang'] ) ) );
+	return in_array( $emifree_raw, array( 'en', 'de' ), true ) ? $emifree_raw : 'en';
+}
 
 /**
  * Enqueue built stylesheet (assets/css/main.css, committed to the repo so
