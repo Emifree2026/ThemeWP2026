@@ -57,7 +57,7 @@ $emifree_body_html = emifree_get_post_body_html( $emifree_current_post['slug'] )
 
 	<?php /* ----- Header band ----- */ ?>
 	<div class="bg-slate-50 border-b border-slate-200">
-		<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+		<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
 			<a href="/" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
