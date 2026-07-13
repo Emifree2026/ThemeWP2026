@@ -23,6 +23,13 @@ if ( ! defined( 'EMIFREE_THEME_VERSION' ) ) {
 // their own data. See inc/i18n.php for the full rationale.
 require_once get_template_directory() . '/inc/i18n.php';
 
+// SEO helpers — defines emifree_seo_page(), emifree_seo_page_with_schema(),
+// emifree_seo_blog_post(), and the EMIFREE_SITE_URL constant. Used by
+// page-blog.php, page-blog-post.php, and the German blog shim siblings.
+// Loaded globally so every page template can call into it; defining
+// functions inside inc/seo.php is idempotent (no re-declare errors).
+require_once get_template_directory() . '/inc/seo.php';
+
 /**
  * Get the active site language code ('en' or 'de') for the Header
  * dispatcher. Reads the emifree_lang cookie set by the language
@@ -209,18 +216,23 @@ add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
  * unified flush from firing.
  */
 function emifree_maybe_flush_section_routes() {
-	if ( get_transient( 'emifree_section_routes_flushed_v4' ) ) {
+	if ( get_transient( 'emifree_section_routes_flushed_v5' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
 	emifree_register_de_homepage_route();
-	flush_rewrite_rules( false );
+	// Hard flush (true) — the soft flush (false) only updates when rules
+	// changed, which can leave stale v4 rules in the DB if the v4 transient
+	// was set under a different code path. Hard flush is idempotent and
+	// safe to call on every version bump.
+	flush_rewrite_rules( true );
 	delete_transient( 'emifree_legal_routes_flushed' );
 	delete_transient( 'emifree_section_routes_flushed' );
 	delete_transient( 'emifree_section_routes_flushed_v2' );
 	delete_transient( 'emifree_section_routes_flushed_v3' );
-	set_transient( 'emifree_section_routes_flushed_v4', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_section_routes_flushed_v4' );
+	set_transient( 'emifree_section_routes_flushed_v5', 1, DAY_IN_SECONDS );
 }
 add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
 
@@ -229,6 +241,10 @@ add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
  *
  * Routes /blog/ to page-blog.php without requiring a Page record in
  * wp_posts. Page-blog.php handles its own SEO + body rendering.
+ *
+ * The German equivalents (/de/blog/, /de/blog/{slug}/) registered
+ * alongside set emifree_blog_lang=de so the dispatcher can pick the
+ * German sibling (page-blog-de.php, page-blog-post-de.php).
  * ------------------------------------------------------------------------- */
 
 function emifree_register_blog_route() {
@@ -240,6 +256,18 @@ function emifree_register_blog_route() {
 	add_rewrite_rule(
 		'^blog/([^/]+)/?$',
 		'index.php?emifree_blog=post&emifree_blog_slug=$matches[1]',
+		'top'
+	);
+	// German (de) blog routes — slug names mirror the English ones
+	// so the link (href) just adds the /de/ prefix.
+	add_rewrite_rule(
+		'^de/blog/?$',
+		'index.php?emifree_blog=index&emifree_blog_lang=de',
+		'top'
+	);
+	add_rewrite_rule(
+		'^de/blog/([^/]+)/?$',
+		'index.php?emifree_blog=post&emifree_blog_slug=$matches[1]&emifree_blog_lang=de',
 		'top'
 	);
 }
@@ -333,6 +361,7 @@ add_filter( 'template_include', 'emifree_route_de_header_template' );
 function emifree_register_blog_query_var( $vars ) {
 	$vars[] = 'emifree_blog';
 	$vars[] = 'emifree_blog_slug';
+	$vars[] = 'emifree_blog_lang';
 	return $vars;
 }
 add_filter( 'query_vars', 'emifree_register_blog_query_var' );
@@ -342,10 +371,12 @@ function emifree_route_blog_template() {
 	if ( ! $emifree_blog_mode ) {
 		return;
 	}
+	$emifree_is_de = ( 'de' === get_query_var( 'emifree_blog_lang' ) );
+
 	if ( 'index' === $emifree_blog_mode ) {
-		$emifree_template_name = 'page-blog.php';
+		$emifree_template_name = $emifree_is_de ? 'page-blog-de.php' : 'page-blog.php';
 	} elseif ( 'post' === $emifree_blog_mode ) {
-		$emifree_template_name = 'page-blog-post.php';
+		$emifree_template_name = $emifree_is_de ? 'page-blog-post-de.php' : 'page-blog-post.php';
 	} else {
 		return;
 	}

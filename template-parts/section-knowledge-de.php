@@ -169,7 +169,8 @@ $emifree_knowledge_tabs = array(
 				// strings for the "Read article" link).
 				$emifree_blog_uri = get_template_directory_uri() . '/assets/images/blog/';
 				foreach ( $emifree_blog_posts as $emifree_post ) :
-					$emifree_permalink = '/blog/' . $emifree_post['slug'] . '/';
+					// Point to /de/blog/{slug}/ — the German blog shim.
+					$emifree_permalink = '/de/blog/' . $emifree_post['slug'] . '/';
 					$emifree_hero_src  = $emifree_blog_uri . $emifree_post['hero_image'];
 					$emifree_hero_alt  = $emifree_post['title'];
 					?>
@@ -229,7 +230,7 @@ $emifree_knowledge_tabs = array(
 
 			<div class="text-center">
 				<a
-					href="/blog"
+					href="/de/blog"
 					class="inline-flex items-center gap-2 bg-white border-2 border-blue-700 text-blue-700 px-8 py-3 rounded-full font-semibold hover:bg-blue-700 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
 				>
 					Alle Artikel anzeigen
