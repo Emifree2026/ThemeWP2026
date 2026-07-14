@@ -197,7 +197,19 @@
 				}
 				if ( 'en' === emifreeLangLower ) {
 					if ( emifreeCurPath.startsWith( '/de' ) ) {
-						return emifreeCurPath.replace( /^\/de/, '' ) || '/en/';
+						// Homepage case: /de or /de/ → /en/. The bare replace
+						// below would yield "/" which 301s back to /de/ via
+						// emifree_maybe_redirect_home_to_de(), so we have to
+						// short-circuit explicitly here.
+						if ( '/de' === emifreeCurPath || '/de/' === emifreeCurPath ) {
+							return '/en/';
+						}
+						// Non-homepage /de/* route — strip the /de prefix to
+						// land on the EN equivalent (e.g. /de/impressum/ →
+						// /impressum/). Slugs without an EN counterpart
+						// (e.g. /de/datenschutz/, /de/agb/) will hit a 404
+						// until /en/{slug}/ siblings ship.
+						return emifreeCurPath.replace( /^\/de/, '' );
 					}
 					if ( emifreeIsHome ) {
 						return '/en/';
