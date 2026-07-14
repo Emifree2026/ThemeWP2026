@@ -509,7 +509,7 @@ function emifree_enqueue_contact_script() {
 		$emifree_handle,
 		'emifreeContact',
 		array(
-			'ajaxUrl'    => admin_url( 'admin-ajax.php' ),
+			'ajaxUrl'    => admin_url( 'admin-ajax.php' ) . '?action=send_contact',
 			'nonce'      => wp_create_nonce( 'emifree_contact' ),
 			'successMsg' => __( 'Message sent successfully! We\'ll get back to you as soon as possible.', 'emifree-theme' ),
 			'errorMsg'   => __( 'Something went wrong. Please try again or email us directly.', 'emifree-theme' ),

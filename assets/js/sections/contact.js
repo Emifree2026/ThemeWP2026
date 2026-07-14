@@ -5,10 +5,11 @@
  *    Zod schema: name ≥ 2, valid email regex, company ≥ 2,
  *    message ≥ 10. Inline error rendering via data-emifree-contact-error
  *    paragraphs + red border on the offending input.
- *  - Submit handler: fetch to admin-ajax.php (URL provided by
- *    wp_localize_script as emifreeContact.ajaxUrl). The form's action
- *    attribute already has the ?action=send_contact query string, so
- *    we POST the FormData as-is. On success, show the success banner,
+ *  - Submit handler: fetch to admin-ajax.php?action=send_contact
+ *    (URL provided by wp_localize_script as emifreeContact.ajaxUrl,
+ *    already includes the action query string — see
+ *    emifree_enqueue_contact_script() in functions.php). We POST
+ *    FormData as-is. On success, show the success banner,
  *    clear the form. On error, show the error banner + surface any
  *    per-field errors that came back from the server.
  *  - Button state: idle (Send Message + send icon) ↔ loading
