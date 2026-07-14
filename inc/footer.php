@@ -11,9 +11,15 @@
  * (e.g. /impressum/, /privacy/, /terms/). The smooth-scroll handler in
  * header.js matches both `#anchor` and `/#anchor` and only intercepts
  * the latter when the user is already on the same path; otherwise
- * the browser performs a full navigation to the homepage. Routes
- * not yet shipped (e.g. /blog) will 404 until those pieces land —
- * that is expected and temporary.
+ * the browser performs a full navigation to the homepage.
+ *
+ * Language-aware: when the request URI starts with `/de/`, the
+ * Company / Resources column headers + the Blog / Contact /
+ * Case Studies labels come back in German and the in-page hrefs are
+ * prefixed with `/de/` so a user who selected German stays on
+ * German after clicking any footer link. The Legal column has its
+ * own dispatcher (cookie-based, name_en/name_de + href_en/href_de)
+ * that's untouched here.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -22,9 +28,32 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 if ( ! function_exists( 'emifree_footer_links' ) ) :
 	function emifree_footer_links() {
+		// Path-based detection (same reasoning as inc/nav.php — the
+		// request URI is the source of truth for which page was rendered,
+		// not the cookie which can be stale).
+		$emifree_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+		$emifree_is_de = ( 0 === strpos( $emifree_uri, '/de' ) );
+
+		if ( $emifree_is_de ) {
+			return array(
+				'Unternehmen' => array(
+					array( 'name' => 'Blog',    'href' => '/de/blog'   ),
+					array( 'name' => 'Kontakt', 'href' => '/de/#contact' ),
+				),
+				'Ressourcen' => array(
+					array( 'name' => 'Fallstudien', 'href' => '/de/#knowledge' ),
+				),
+				'Legal'      => array(
+					array( 'name_en' => 'Imprint',              'name_de' => 'Impressum',            'href_en' => '/impressum',              'href_de' => '/de/impressum' ),
+					array( 'name_en' => 'Privacy Policy',       'name_de' => 'Datenschutz',          'href_en' => '/privacy',                'href_de' => '/de/datenschutz' ),
+					array( 'name_en' => 'General Terms (GTC)',  'name_de' => 'AGB',                  'href_en' => '/terms',                  'href_de' => '/de/agb' ),
+				),
+			);
+		}
+
 		return array(
 			'Company'   => array(
-				array( 'name' => 'Blog',    'href' => '/blog' ),
+				array( 'name' => 'Blog',    'href' => '/blog'    ),
 				array( 'name' => 'Contact', 'href' => '/#contact' ),
 			),
 			'Resources' => array(

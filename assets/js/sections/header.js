@@ -282,6 +282,8 @@
 	//                        /privacy/, /terms/ — see inc/nav.php).
 	// For /#anchor, only preventDefault + smooth-scroll if we're
 	// already on the same path; otherwise let the browser navigate.
+	// The same-path check covers both / and /de/ so a click on
+	// /de/#products from /de/ still scrolls in place (no full reload).
 	document.querySelectorAll( 'a[href^="#"], a[href^="/#"]' ).forEach( ( anchor ) => {
 		anchor.addEventListener( 'click', function ( e ) {
 			const emifreeHref = this.getAttribute( 'href' );
@@ -297,7 +299,9 @@
 			// already on the same page. If we are not, let the browser
 			// do a full navigation to the homepage + fragment.
 			if ( emifreeHref.startsWith( '/' ) ) {
-				const emifreeSamePath = window.location.pathname === '/' || window.location.pathname === '';
+				const emifreePath = window.location.pathname.replace( /\/$/, '' );
+				const emifreeHrefPath = emifreeHref.split( '#' )[ 0 ].replace( /\/$/, '' ) || '/';
+				const emifreeSamePath = emifreePath === emifreeHrefPath;
 				if ( ! emifreeSamePath ) {
 					return;
 				}
