@@ -53,7 +53,7 @@ function emifree_render_legal_page_body( $slug, $lang = 'en' ) {
 	?>
 	<div class="min-h-screen bg-white">
 		<div class="bg-slate-50 border-b border-slate-200">
-			<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+			<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
 				<a href="<?php echo esc_url( $emifree_back_to_root ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium mb-6 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>

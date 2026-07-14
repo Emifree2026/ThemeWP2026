@@ -31,9 +31,12 @@ require_once get_template_directory() . '/inc/nav.php';
 		<div class="flex items-center justify-between h-16">
 
 			<!-- Dual logo (logo.png wordmark + emilogo.png) — matches the
-			     baseline React Header's setup. -->
+			     baseline React Header's setup. The logo points to the
+			     explicit German homepage (/de/) so German users stay
+			     on German — pointing to / would 301 to /de/ on every
+			     logo click (one extra round-trip + cookie-clear risk). -->
 			<div class="flex-shrink-0 flex items-center gap-3">
-				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Emifree — zurück zur Startseite">
+				<a href="<?php echo esc_url( home_url( '/de/' ) ); ?>" aria-label="Emifree — zurück zur Startseite">
 					<img
 						src="<?php echo esc_url( get_template_directory_uri() . '/assets/logo.png' ); ?>"
 						alt="Emifree"
@@ -42,7 +45,7 @@ require_once get_template_directory() . '/inc/nav.php';
 						height="40"
 					>
 				</a>
-				<a href="<?php echo esc_url( home_url( '/' ) ); ?>" aria-label="Emifree — zurück zur Startseite">
+				<a href="<?php echo esc_url( home_url( '/de/' ) ); ?>" aria-label="Emifree — zurück zur Startseite">
 					<img
 						src="<?php echo esc_url( get_template_directory_uri() . '/assets/emilogo.png' ); ?>"
 						alt="Emifree"

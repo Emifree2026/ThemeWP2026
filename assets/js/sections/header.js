@@ -172,6 +172,41 @@
 			}
 		} );
 
+		// Path-swap helper shared by desktop + mobile language switchers.
+		// Returns the URL to navigate to after the user picks a language,
+		// or the current pathname if no navigation is needed.
+		//
+		// Rules:
+		//   - DE selection: prepend /de/ if not already there. Homepage
+		//     paths (/, /en, /en/) all map to /de/.
+		//   - EN selection: strip /de/ prefix to land on the EN equivalent.
+		//     Homepage paths (/, /en, /en/) all map to /en/. EN selection
+		//     on a non-homepage path (e.g. /impressum/) is a no-op since
+		//     /en/{slug}/ siblings don't ship yet.
+		function emifreeComputeLangTarget( code ) {
+				const emifreeLangLower = String( code ).toLowerCase();
+				const emifreeCurPath   = window.location.pathname;
+				const emifreeIsHome    = '/' === emifreeCurPath
+					|| '/en' === emifreeCurPath
+					|| '/en/' === emifreeCurPath;
+				if ( 'de' === emifreeLangLower ) {
+					if ( emifreeCurPath.startsWith( '/de' ) ) {
+						return emifreeCurPath;
+					}
+					return '/de' + ( emifreeIsHome ? '/' : emifreeCurPath );
+				}
+				if ( 'en' === emifreeLangLower ) {
+					if ( emifreeCurPath.startsWith( '/de' ) ) {
+						return emifreeCurPath.replace( /^\/de/, '' ) || '/en/';
+					}
+					if ( emifreeIsHome ) {
+						return '/en/';
+					}
+					return emifreeCurPath; // no-op: no /en/{slug}/ sibling yet
+				}
+				return emifreeCurPath;
+			}
+
 		emifreeLangMenu.querySelectorAll( '.emifree-lang-option' ).forEach( ( btn ) => {
 			btn.addEventListener( 'click', () => {
 				const emifreeCode = btn.getAttribute( 'data-lang' );
@@ -185,21 +220,8 @@
 				emifreeLangMenu.classList.add( 'hidden' );
 				emifreeLangBtn.setAttribute( 'aria-expanded', 'false' );
 
-				// Navigate to the equivalent page in the chosen language.
-				// For DE: add /de/ prefix if not already there.
-				// For EN: strip /de/ prefix if present.
-				const emifreeLangLower = String( emifreeCode ).toLowerCase();
-				const emifreeCurPath = window.location.pathname;
-				let emifreeTargetPath = emifreeCurPath;
-				if ( 'de' === emifreeLangLower ) {
-					if ( ! emifreeCurPath.startsWith( '/de' ) ) {
-						emifreeTargetPath = '/de' + ( emifreeCurPath === '/' ? '/' : emifreeCurPath );
-					}
-				} else {
-					// English
-					emifreeTargetPath = emifreeCurPath.replace( /^\/de/, '' ) || '/';
-				}
-				if ( emifreeTargetPath !== emifreeCurPath ) {
+				const emifreeTargetPath = emifreeComputeLangTarget( emifreeCode );
+				if ( emifreeTargetPath !== window.location.pathname ) {
 					window.location.href = emifreeTargetPath;
 				}
 			} );
@@ -225,9 +247,11 @@
 				} );
 			}
 
-		// Mobile menu language pills — visually highlight the active pill
-		// and sync the desktop label so both stay in lockstep. Real i18n
-		// routing lands later; this is the visual placeholder for now.
+		// Mobile menu language pills — visually highlight the active pill,
+		// sync the desktop label, persist the choice, and navigate to the
+		// equivalent page in the chosen language (same path-swap helper as
+		// the desktop dropdown). The mobile menu is also closed before
+		// navigating so it doesn't flash open on slow networks.
 		document.querySelectorAll( '.emifree-mobile-lang' ).forEach( ( emifreePill ) => {
 			emifreePill.addEventListener( 'click', ( e ) => {
 				e.preventDefault();
@@ -250,6 +274,20 @@
 					try { localStorage.setItem( EMIFREE_LANG_KEY, String( emifreeCode ).toLowerCase() ); } catch ( e ) {}
 					try { document.cookie = EMIFREE_LANG_KEY + '=' + encodeURIComponent( String( emifreeCode ).toLowerCase() ) + '; path=/; max-age=' + (60*60*24*30); } catch ( e ) {}
 					emifreeUpdateFooterLegalLinks( emifreeCode );
+
+					const emifreeTargetPath = emifreeComputeLangTarget( emifreeCode );
+					if ( emifreeTargetPath !== window.location.pathname ) {
+						// Close the mobile menu before navigating.
+						if ( emifreeMobileMenu ) {
+							emifreeMobileMenu.classList.add( 'hidden' );
+						}
+						if ( emifreeMobileBtn ) {
+							emifreeMobileBtn.setAttribute( 'aria-expanded', 'false' );
+							if ( emifreeIconOpen )  emifreeIconOpen.classList.remove( 'hidden' );
+							if ( emifreeIconClose ) emifreeIconClose.classList.add( 'hidden' );
+						}
+						window.location.href = emifreeTargetPath;
+					}
 			} );
 		} );
 

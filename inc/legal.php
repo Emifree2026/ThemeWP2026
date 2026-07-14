@@ -215,23 +215,23 @@ function emifree_render_legal_body( $slug, $lang = 'en' ) {
 	if ( 'de' === $lang ) {
 		switch ( $slug ) {
 			case 'impressum':
-				return emifree_render_impressum_de_body();
+				return emifree_render_impressum_de_body( $lang );
 			case 'datenschutz':
-				return emifree_render_datenschutz_de_body();
+				return emifree_render_datenschutz_de_body( $lang );
 			case 'agb':
-				return emifree_render_agb_de_body();
+				return emifree_render_agb_de_body( $lang );
 		}
 		return '';
 	}
 	switch ( $slug ) {
 		case 'impressum':
-			return emifree_render_impressum_body();
+			return emifree_render_impressum_body( $lang );
 
 		case 'privacy':
-			return emifree_render_privacy_body();
+			return emifree_render_privacy_body( $lang );
 
 		case 'terms':
-			return emifree_render_terms_body();
+			return emifree_render_terms_body( $lang );
 	}
 	return '';
 }
@@ -243,7 +243,8 @@ function emifree_render_legal_body( $slug, $lang = 'en' ) {
  * don't tangle PHP tags inside HTML — cleaner than mixing them.
  * ------------------------------------------------------------------------- */
 
-function emifree_render_impressum_body(): string {
+function emifree_render_impressum_body( $lang = 'en' ): string {
+	$emifree_back_to_root = ( 'de' === $lang ) ? home_url( '/de/' ) : home_url( '/en/' );
 	ob_start();
 	?>
 	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
@@ -299,7 +300,7 @@ function emifree_render_impressum_body(): string {
 		</p>
 
 		<div class="mt-12 pt-8 border-t border-slate-200">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( $emifree_back_to_root ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -312,7 +313,8 @@ function emifree_render_impressum_body(): string {
 	return (string) ob_get_clean();
 }
 
-function emifree_render_privacy_body(): string {
+function emifree_render_privacy_body( $lang = 'en' ): string {
+	$emifree_back_to_root = ( 'de' === $lang ) ? home_url( '/de/' ) : home_url( '/en/' );
 	ob_start();
 	?>
 	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
@@ -411,7 +413,7 @@ function emifree_render_privacy_body(): string {
 		</ul>
 
 		<div class="mt-12 pt-8 border-t border-slate-200">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( $emifree_back_to_root ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -424,7 +426,8 @@ function emifree_render_privacy_body(): string {
 	return (string) ob_get_clean();
 }
 
-function emifree_render_terms_body(): string {
+function emifree_render_terms_body( $lang = 'en' ): string {
+	$emifree_back_to_root = ( 'de' === $lang ) ? home_url( '/de/' ) : home_url( '/en/' );
 	ob_start();
 	?>
 	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
@@ -486,7 +489,7 @@ function emifree_render_terms_body(): string {
 		<p class="text-lg leading-relaxed mb-10">(3) Should individual provisions of these terms be or become invalid, the validity of the remaining provisions shall remain unaffected. The invalid provision shall be replaced by a valid clause that comes closest to the economic intent of the original text.</p>
 
 		<div class="mt-12 pt-8 border-t border-slate-200">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( $emifree_back_to_root ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -508,7 +511,8 @@ function emifree_render_terms_body(): string {
  * English renderers above so future style changes propagate cleanly.
  * ------------------------------------------------------------------------- */
 
-function emifree_render_impressum_de_body(): string {
+function emifree_render_impressum_de_body( $lang = 'de' ): string {
+	$emifree_back_to_root = ( 'de' === $lang ) ? home_url( '/de/' ) : home_url( '/en/' );
 	ob_start();
 	?>
 	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
@@ -564,7 +568,7 @@ function emifree_render_impressum_de_body(): string {
 		</p>
 
 		<div class="mt-12 pt-8 border-t border-slate-200">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( $emifree_back_to_root ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -577,7 +581,8 @@ function emifree_render_impressum_de_body(): string {
 	return (string) ob_get_clean();
 }
 
-function emifree_render_datenschutz_de_body(): string {
+function emifree_render_datenschutz_de_body( $lang = 'de' ): string {
+	$emifree_back_to_root = ( 'de' === $lang ) ? home_url( '/de/' ) : home_url( '/en/' );
 	ob_start();
 	?>
 	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
@@ -676,7 +681,7 @@ function emifree_render_datenschutz_de_body(): string {
 		</ul>
 
 		<div class="mt-12 pt-8 border-t border-slate-200">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( $emifree_back_to_root ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -689,7 +694,8 @@ function emifree_render_datenschutz_de_body(): string {
 	return (string) ob_get_clean();
 }
 
-function emifree_render_agb_de_body(): string {
+function emifree_render_agb_de_body( $lang = 'de' ): string {
+	$emifree_back_to_root = ( 'de' === $lang ) ? home_url( '/de/' ) : home_url( '/en/' );
 	ob_start();
 	?>
 	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-zinc-700">
@@ -751,7 +757,7 @@ function emifree_render_agb_de_body(): string {
 		<p class="text-lg leading-relaxed mb-10">(3) Sollten einzelne Bestimmungen dieser AGB unwirksam sein oder werden, bleibt die Wirksamkeit der übrigen Bestimmungen unberührt. An die Stelle der unwirksamen Bestimmung tritt eine wirksame Regelung, die dem wirtschaftlichen Zweck der unwirksamen Bestimmung am nächsten kommt.</p>
 
 		<div class="mt-12 pt-8 border-t border-slate-200">
-			<a href="<?php echo esc_url( home_url( '/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( $emifree_back_to_root ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>

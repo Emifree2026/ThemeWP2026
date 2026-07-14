@@ -32,13 +32,19 @@ require_once get_template_directory() . '/inc/seo.php';
 
 /**
  * Get the active site language code ('en' or 'de') for the Header
- * dispatcher. Reads the emifree_lang cookie set by the language
- * switcher; defaults to 'en'. Path-based detection (/de/) is the
- * responsibility of emifree_route_de_homepage_template() — by the
- * time we get here the active template is already front-page-de.php
- * or page-de-*.php, so the cookie is usually set.
+ * dispatcher. Path is the source of truth — a request to /de/...
+ * always resolves to 'de', even on a first visit with no cookie
+ * (e.g. after the / → /de/ 301 redirect lands a fresh user on /de/).
+ * The emifree_lang cookie is the fallback for routes that don't
+ * carry the language prefix (/impressum/, /blog/, etc.); default
+ * is 'en'. Mirrors the path-then-cookie pattern in inc/nav.php and
+ * inc/footer.php.
  */
 function emifree_get_lang() {
+	$emifree_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	if ( 0 === strpos( $emifree_uri, '/de' ) ) {
+		return 'de';
+	}
 	if ( ! isset( $_COOKIE['emifree_lang'] ) ) {
 		return 'en';
 	}
@@ -216,12 +222,12 @@ add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
  * unified flush from firing.
  */
 function emifree_maybe_flush_section_routes() {
-	if ( get_transient( 'emifree_section_routes_flushed_v5' ) ) {
+	if ( get_transient( 'emifree_section_routes_flushed_v6' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
-	emifree_register_de_homepage_route();
+	emifree_register_homepage_lang_route();
 	// Hard flush (true) — the soft flush (false) only updates when rules
 	// changed, which can leave stale v4 rules in the DB if the v4 transient
 	// was set under a different code path. Hard flush is idempotent and
@@ -232,7 +238,8 @@ function emifree_maybe_flush_section_routes() {
 	delete_transient( 'emifree_section_routes_flushed_v2' );
 	delete_transient( 'emifree_section_routes_flushed_v3' );
 	delete_transient( 'emifree_section_routes_flushed_v4' );
-	set_transient( 'emifree_section_routes_flushed_v5', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_section_routes_flushed_v5' );
+	set_transient( 'emifree_section_routes_flushed_v6', 1, DAY_IN_SECONDS );
 }
 add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
 
@@ -274,28 +281,32 @@ function emifree_register_blog_route() {
 add_action( 'init', 'emifree_register_blog_route' );
 
 /**
- * German homepage route — /de/ (or /de).
+ * Homepage language routes — /de/ and /en/.
  *
- * Dispatches to front-page-de.php which composes the German version of
- * the homepage from the same section template parts. Each template part
- * loads the active language's data file via emifree_require_section_data()
- * (see inc/i18n.php), so German content is selected when the emifree_lang
- * cookie is set to 'de'.
+ * Each route registers as a SEPARATE WP rewrite so the homepage serves
+ * the correct language even if the user's cookie is unset. We deliberately
+ * don't tie these routes to a cookie: the language switcher sets the
+ * cookie AND navigates, but a user who lands on /de/ directly (e.g. via
+ * a Google search) sees German regardless of any saved preference, and
+ * an English user hitting /en/ sees English even if their cookie expired.
  *
- * Note: this registers /de/ as a SEPARATE route — the German homepage
- * serves even if the user's cookie is unset. We deliberately don't tie
- * the German route to a cookie: the language switcher sets the cookie
- * AND navigates, but a user who lands on /de/ directly (e.g. via a
- * Google search) sees German regardless of any saved preference.
+ * The bare / (and the alternate WP URL /index.php) is redirected to /de/
+ * by emifree_maybe_redirect_home_to_de() below — that's the default-lang
+ * flip, not this dispatcher.
  */
-function emifree_register_de_homepage_route() {
+function emifree_register_homepage_lang_route() {
 	add_rewrite_rule(
 		'^de/?$',
 		'index.php?emifree_homepage_lang=de',
 		'top'
 	);
+	add_rewrite_rule(
+		'^en/?$',
+		'index.php?emifree_homepage_lang=en',
+		'top'
+	);
 }
-add_action( 'init', 'emifree_register_de_homepage_route' );
+add_action( 'init', 'emifree_register_homepage_lang_route' );
 
 function emifree_register_homepage_lang_query_var( $vars ) {
 	$vars[] = 'emifree_homepage_lang';
@@ -304,20 +315,28 @@ function emifree_register_homepage_lang_query_var( $vars ) {
 add_filter( 'query_vars', 'emifree_register_homepage_lang_query_var' );
 
 /**
- * Dispatch /de/ to front-page-de.php. The default front-page.php
- * (English homepage) continues to handle /. Cookie-based language
- * detection inside the templates picks the right strings regardless.
+ * Dispatch /de/ and /en/ to the matching homepage template.
+ *
+ * The bare / (and /index.php) is redirected to /de/ by
+ * emifree_maybe_redirect_home_to_de() before this dispatcher runs,
+ * so this callback only fires for the explicit /de/ and /en/
+ * routes. Cookie-based language detection inside the templates
+ * picks the right strings regardless — the dispatcher only picks
+ * the template file.
  */
-function emifree_route_de_homepage_template() {
-	if ( 'de' !== get_query_var( 'emifree_homepage_lang' ) ) {
+function emifree_route_homepage_lang_template() {
+	$emifree_lang = get_query_var( 'emifree_homepage_lang' );
+	if ( 'de' === $emifree_lang ) {
+		$emifree_target = locate_template( 'front-page-de.php' );
+	} elseif ( 'en' === $emifree_lang ) {
+		$emifree_target = locate_template( 'front-page.php' );
+	} else {
 		return;
 	}
-	$emifree_target = locate_template( 'front-page-de.php' );
 	if ( ! $emifree_target ) {
-		// front-page-de.php not yet built — fall back to the
-		// English homepage so /de/ at least serves content rather
-		// than 404'ing. Will be replaced once front-page-de.php
-		// lands (Piece B2).
+		// Fall back to whatever the active front-page.php is so the
+		// route serves content rather than 404'ing — better than a
+		// blank white screen if a template file goes missing.
 		$emifree_target = locate_template( 'front-page.php' );
 	}
 	add_filter(
@@ -327,7 +346,7 @@ function emifree_route_de_homepage_template() {
 		}
 	);
 }
-add_action( 'template_redirect', 'emifree_route_de_homepage_template' );
+add_action( 'template_redirect', 'emifree_route_homepage_lang_template' );
 
 /**
  * Language-aware Header dispatcher.
@@ -357,6 +376,48 @@ function emifree_route_de_header_template( $template ) {
 	return $emifree_de_header ? $emifree_de_header : $template;
 }
 add_filter( 'template_include', 'emifree_route_de_header_template' );
+
+/**
+ * Default-language redirect — /  →  /de/.
+ *
+ * German is the primary language of this site (primary market is
+ * Germany, traffic skews German). A fresh visitor with no
+ * emifree_lang cookie who hits the bare homepage is bounced to
+ * /de/ via a 301 permanent redirect. 301 is correct here — this
+ * is a permanent flip, not a temporary routing decision — and
+ * transfers any existing PageRank from / to /de/.
+ *
+ * The redirect only fires when:
+ *   - the request URI is the bare homepage (or its /index.php
+ *     alternate), so /impressum/, /blog/, /en/, /de/, etc. are
+ *     untouched, and
+ *   - the user does not have an emifree_lang=en cookie, so any
+ *     English user who explicitly opted into English keeps seeing
+ *     English on subsequent visits (the language switcher writes
+ *     the cookie AND navigates to /en/).
+ *
+ * Priority 5 fires before the homepage template dispatcher at
+ * priority 10, so the redirect wins when both could apply.
+ */
+function emifree_maybe_redirect_home_to_de() {
+	if ( is_admin() ) {
+		return;
+	}
+	$emifree_uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$emifree_path = parse_url( $emifree_uri, PHP_URL_PATH );
+	// Only the bare homepage — both with and without trailing slash,
+	// plus the /index.php alternate URL WordPress may serve.
+	if ( ! in_array( rtrim( (string) $emifree_path, '/' ), array( '', '/', '/index.php' ), true ) ) {
+		return;
+	}
+	// Don't redirect English users (cookie opt-in).
+	if ( isset( $_COOKIE['emifree_lang'] ) && 'en' === strtolower( sanitize_text_field( wp_unslash( $_COOKIE['emifree_lang'] ) ) ) ) {
+		return;
+	}
+	wp_safe_redirect( home_url( '/de/' ), 301 );
+	exit;
+}
+add_action( 'template_redirect', 'emifree_maybe_redirect_home_to_de', 5 );
 
 function emifree_register_blog_query_var( $vars ) {
 	$vars[] = 'emifree_blog';

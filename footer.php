@@ -64,10 +64,15 @@ emifree_require_section_data( 'footer' );
 									// data attributes and choose the initial href based on the
 									// site's current language so the links are language-aware.
 									if ( isset( $emifree_link['href_en'] ) ) :
-										// Prefer explicit user language stored in cookie so
-										// client-side selections survive full navigations.
-										$site_lang = 'en';
-										if ( isset( $_COOKIE['emifree_lang'] ) ) {
+										// Resolve the active language. Request URI is the
+										// source of truth (matches a user landing on /de/
+										// after the / → /de/ 301 redirect); the cookie is
+										// the fallback for routes without a /de/ prefix.
+										$site_lang  = 'en';
+										$emifree_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+										if ( 0 === strpos( $emifree_uri, '/de' ) ) {
+											$site_lang = 'de';
+										} elseif ( isset( $_COOKIE['emifree_lang'] ) ) {
 											$site_lang = strtolower( sanitize_text_field( wp_unslash( $_COOKIE['emifree_lang'] ) ) );
 										} else {
 											$site_lang = strtolower( substr( get_bloginfo( 'language' ), 0, 2 ) );
