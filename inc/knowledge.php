@@ -89,19 +89,19 @@ if ( ! function_exists( 'emifree_catalog_pdfs' ) ) :
 		return array(
 			array(
 				'name'      => 'ECO AIR Cleaner Catalog',
-				'filename'  => 'emifree_eco_air_cleaner_catalog__1.pdf',
-				'size'      => '2.9 MB',
+				'filename'  => 'emifree_eco_air_cleaner_katalog_ENG_v4.2.pdf',
+				'size'      => '2.1 MB',
 				'lang'      => 'EN',
 				'available' => true,
-				'url'       => $emifree_catalog_uri . 'emifree_eco_air_cleaner_catalog__1.pdf',
+				'url'       => $emifree_catalog_uri . 'emifree_eco_air_cleaner_katalog_ENG_v4.2.pdf',
 			),
 			array(
 				'name'      => 'ECO AIR Cleaner Katalog',
-				'filename'  => 'kat_emi_de_.pdf',
-				'size'      => '5.0 MB',
+				'filename'  => 'emifree_eco_air_cleaner_katalog_DE_v4.2.pdf',
+				'size'      => '2.1 MB',
 				'lang'      => 'DE',
 				'available' => true,
-				'url'       => $emifree_catalog_uri . 'kat_emi_de_.pdf',
+				'url'       => $emifree_catalog_uri . 'emifree_eco_air_cleaner_katalog_DE_v4.2.pdf',
 			),
 			array(
 				'name'      => 'EARIA Electrostatic Catalog',
