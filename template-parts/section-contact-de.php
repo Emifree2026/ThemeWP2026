@@ -5,8 +5,12 @@
  * Hard-coded translation of section-contact.php. 4-field contact form
  * (left) + 3 contact-info cards (right). Form submit is wired to the
  * same admin-ajax.php endpoint as the English form. The AJAX handler
- * in functions.php reads emifree_contact_recipient_email() — for
- * German requests this should still send to info@emifree.com.
+ * in functions.php reads emifree_contact_recipient_email(), which
+ * returns contact.website@emifree.com by default (overridable via
+ * the EMIFREE_CONTACT_RECIPIENT_EMAIL wp-config constant) regardless
+ * of language. The Email Us card shown to visitors below still
+ * displays info@emifree.com by design — the visible-card address
+ * and the form-submission inbox are intentionally separate.
  *
  * Per-section JS (assets/js/sections/contact.js) is language-agnostic
  * — it operates on data-emifree-* attributes. The localized success /

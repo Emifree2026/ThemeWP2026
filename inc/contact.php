@@ -58,7 +58,24 @@ if ( ! function_exists( 'emifree_contact_info' ) ) :
 endif;
 
 if ( ! function_exists( 'emifree_contact_recipient_email' ) ) :
+	/**
+	 * The address that the contact-form's wp_mail() delivers to.
+	 *
+	 * This is the inbox that "leads" land in — it is *not* the address
+	 * shown to visitors on the page (the Email Us card on each Contact
+	 * section still shows info@emifree.com by design). The default
+	 * here is contact.website@emifree.com so that production form
+	 * submissions auto-route into the lead-handling inbox even before
+	 * wp-config.php is updated.
+	 *
+	 * Override per environment via wp-config.php:
+	 *
+	 *   define( 'EMIFREE_CONTACT_RECIPIENT_EMAIL', 'dev@yourdomain.com' );
+	 */
 	function emifree_contact_recipient_email() {
-		return 'info@emifree.com';
+		if ( defined( 'EMIFREE_CONTACT_RECIPIENT_EMAIL' ) && EMIFREE_CONTACT_RECIPIENT_EMAIL ) {
+			return EMIFREE_CONTACT_RECIPIENT_EMAIL;
+		}
+		return 'contact.website@emifree.com';
 	}
 endif;
