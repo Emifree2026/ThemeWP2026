@@ -118,7 +118,7 @@ $emifree_body_html = emifree_get_post_body_html( $emifree_current_post['slug'] )
 	<article class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12" itemscope itemtype="https://schema.org/BlogPosting">
 		<meta itemprop="datePublished" content="<?php echo esc_attr( $emifree_current_post['date'] ); ?>">
 		<meta itemprop="author" content="<?php echo esc_attr( $emifree_current_post['author'] ); ?>">
-		<link itemprop="url" href="<?php echo esc_url( EMIFREE_SITE_URL . '/blog/' . $emifree_current_post['slug'] ); ?>">
+		<link itemprop="url" href="<?php echo esc_url( home_url( '/blog/' . $emifree_current_post['slug'] ) ); ?>">
 
 		<div class="text-zinc-700">
 			<?php echo wp_kses_post( $emifree_body_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — sanitized via wp_kses_post. ?>

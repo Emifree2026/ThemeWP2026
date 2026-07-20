@@ -62,6 +62,36 @@ $emifree_contact_info   = emifree_contact_info();
 					<?php /* Server-side nonce — duplicated in emifreeContact.nonce for JS */ ?>
 					<input type="hidden" name="emifree_contact_nonce" value="<?php echo esc_attr( wp_create_nonce( 'emifree_contact' ) ); ?>">
 
+					<?php /*
+					 * Antispam — Tier 1:
+					 *
+					 *   1. Timestamp (emifree_ts) — set to seconds-since-epoch at
+					 *      page render time. JS contact.js also rewrites it on
+					 *      DOMContentLoaded to be more precise, but the SSR
+					 *      value is fine as a fallback for no-JS browsers. The
+					 *      server rejects submissions where
+					 *        (now - emifree_ts) < EMIFREE_CONTACT_MIN_SECONDS
+					 *      or > EMIFREE_CONTACT_MAX_SECONDS, killing instant-
+					 *      fire spam and stale-form-replay attacks.
+					 *
+					 *   2. Honeypot (website_url) — visually hidden (off-screen,
+					 *      aria-hidden, tabindex -1) so real users never fill it.
+					 *      Volume bots fill every field including this one; the
+					 *      server rejects any submission where it's non-empty.
+					 *      The name 'website_url' is what 90%+ of dumb bots
+					 *      reflexively probe for; using an obvious name is the
+					 *      whole point.
+					 */ ?>
+					<input type="hidden" name="emifree_ts" value="<?php echo esc_attr( time() ); ?>">
+					<input
+						type="text"
+						name="website_url"
+						tabindex="-1"
+						autocomplete="off"
+						aria-hidden="true"
+						style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;"
+					>
+
 					<?php /* Name */ ?>
 					<div>
 						<label for="emifree-contact-name" class="sr-only">Name</label>

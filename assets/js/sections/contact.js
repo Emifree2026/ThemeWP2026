@@ -41,6 +41,23 @@
 
     const emifreeFields = emifreeForm.querySelectorAll('[data-emifree-contact-field]');
 
+    // ----- Antispam Tier 1: timestamp anchor + honeypot pickup -----
+    // emifree_ts is set to PHP-time at SSR as a fallback; we overwrite
+    // it here so the server-measured elapsed time is "page opened to
+    // submit click" rather than "PHP ran to submit click" (the latter
+    // is artificially short on cached pages).
+    //
+    // We also keep references to both the timestamp + honeypot fields
+    // so the success-path handler can re-anchor the timestamp after
+    // form.reset() (which would otherwise restore the SSR value). The
+    // honeypot itself is empty by default and stays empty through
+    // reset(), so no re-empty action is needed.
+    const emifreeTsInput = emifreeForm.querySelector('input[name="emifree_ts"]');
+    const emifreeHoneypot = emifreeForm.querySelector('input[name="website_url"]');
+    if (emifreeTsInput) {
+        emifreeTsInput.value = String(Math.floor(Date.now() / 1000));
+    }
+
     // ----- Validation rules (mirror React's Zod schema) -----
     const emifreeValidators = {
         name:    (v) => v.trim().length >= 2,
@@ -187,6 +204,16 @@
                 const emifreeMsg = (emifreeData.data && emifreeData.data.message) || window.emifreeContact.successMsg;
                 emifreeShowResult('success', emifreeMsg);
                 emifreeForm.reset();
+                // Re-anchor the timestamp after reset so a second submission
+                // (after a successful first one, or after the user navigates
+                // back) starts the elapsed-time measurement fresh. Without
+                // this, form.reset() restores the original SSR value (or the
+                // pre-DOMContentLoaded server time), which would inflate
+                // elapsed time and risk hitting the EMIFREE_CONTACT_MAX
+                // ceiling on long-running tabs.
+                if (emifreeTsInput) {
+                    emifreeTsInput.value = String(Math.floor(Date.now() / 1000));
+                }
                 emifreeFields.forEach((emifreeField) => {
                     emifreeClearFieldError(emifreeField.getAttribute('data-emifree-contact-field'));
                 });

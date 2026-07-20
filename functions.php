@@ -7,6 +7,7 @@
  *  - Declare theme support (title-tag, post-thumbnails)
  *  - Provide template helpers (loaded on demand in subsequent pieces)
  *  - Wire the Contact form AJAX handler (Piece 9)
+ *  - Wire analytics tag emission via inc/analytics.php (GA4 + GSC + Bing)
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -30,6 +31,45 @@ require_once get_template_directory() . '/inc/i18n.php';
 // functions inside inc/seo.php is idempotent (no re-declare errors).
 require_once get_template_directory() . '/inc/seo.php';
 
+// Analytics helpers — emits Google Analytics 4 + GSC + Bing Webmaster
+// verification tags against wp_head. Each tag is gated on a wp-config
+// constant (EMIFREE_GA4_ID, EMIFREE_GSC_VERIFICATION,
+// EMIFREE_BING_VERIFICATION) so the same theme ships to staging +
+// production with different IDs. Loaded globally so the head tags
+// appear on every page that hits the theme, including the static
+// front-page and the legal pages.
+require_once get_template_directory() . '/inc/analytics.php';
+
+/**
+ * Home subpath — the directory under which WordPress is installed
+ * on this site, derived from home_url(). '' for a root install
+ * (home_url returns 'https://example.com', no path component),
+ * '/wordpress' for a subpath install (home_url returns
+ * 'https://example.com/wordpress', path is '/wordpress').
+ *
+ * The site lives at one of these locations, and every internal path
+ * we generate or compare against (e.g. '/de/', '/impressum/') is
+ * RELATIVE to this subpath — not to the bare domain. The /de/
+ * rewrite rule WP registers, for example, resolves against the
+ * home subpath, so '/de/' on a root install becomes
+ * 'https://example.com/de/' and on a subpath install becomes
+ * 'https://example.com/wordpress/de/'.
+ *
+ * Used by emifree_get_lang(), emifree_maybe_redirect_home_to_de(),
+ * the navigation / footer helpers, and the JS path-swap helper
+ * (via wp_localize_script). Cached statically after first call so
+ * the parse_url hit happens once per request.
+ */
+function emifree_home_subpath() {
+	static $emifree_cached = null;
+	if ( null !== $emifree_cached ) {
+		return $emifree_cached;
+	}
+	$emifree_home_path = parse_url( home_url(), PHP_URL_PATH );
+	$emifree_cached    = rtrim( (string) $emifree_home_path, '/' );
+	return $emifree_cached;
+}
+
 /**
  * Get the active site language code ('en' or 'de') for the Header
  * dispatcher. Path is the source of truth — a request to /de/...
@@ -39,9 +79,19 @@ require_once get_template_directory() . '/inc/seo.php';
  * carry the language prefix (/impressum/, /blog/, etc.); default
  * is 'en'. Mirrors the path-then-cookie pattern in inc/nav.php and
  * inc/footer.php.
+ *
+ * Subpath-aware: the /de prefix check is run against the URI with
+ * the home subpath stripped, so '/wordpress/de/impressum/' on a
+ * subpath install matches as well as '/de/impressum/' on a root
+ * install.
  */
 function emifree_get_lang() {
-	$emifree_uri = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$emifree_uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$emifree_uri  = (string) parse_url( $emifree_uri, PHP_URL_PATH );
+	$emifree_home = emifree_home_subpath();
+	if ( '' !== $emifree_home && 0 === strpos( $emifree_uri, $emifree_home ) ) {
+		$emifree_uri = substr( $emifree_uri, strlen( $emifree_home ) );
+	}
 	if ( 0 === strpos( $emifree_uri, '/de' ) ) {
 		return 'de';
 	}
@@ -406,8 +456,18 @@ function emifree_maybe_redirect_home_to_de() {
 	$emifree_uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
 	$emifree_path = parse_url( $emifree_uri, PHP_URL_PATH );
 	// Only the bare homepage — both with and without trailing slash,
-	// plus the /index.php alternate URL WordPress may serve.
-	if ( ! in_array( rtrim( (string) $emifree_path, '/' ), array( '', '/', '/index.php' ), true ) ) {
+	// plus the /index.php alternate URL WordPress may serve. On a
+	// subpath install (home at /wordpress), also accept /wordpress
+	// and /wordpress/index.php — those are THIS site's bare
+	// homepage, not /wordpress/impressum/ or similar.
+	$emifree_home       = emifree_home_subpath();
+	$emifree_allowlist  = array( '', '/', '/index.php' );
+	if ( '' !== $emifree_home ) {
+		$emifree_allowlist[] = $emifree_home;
+		$emifree_allowlist[] = $emifree_home . '/';
+		$emifree_allowlist[] = $emifree_home . '/index.php';
+	}
+	if ( ! in_array( rtrim( (string) $emifree_path, '/' ), $emifree_allowlist, true ) ) {
 		return;
 	}
 	// Don't redirect English users (cookie opt-in).
@@ -567,6 +627,108 @@ function emifree_enqueue_tawk_widget() {
 add_action( 'wp_enqueue_scripts', 'emifree_enqueue_tawk_widget' );
 
 /**
+ * Run the three Tier 1 antispam checks against the current $_POST +
+ * $_SERVER and return either true (pass) or a WP_Error.
+ *
+ * Why a pure function instead of inlined checks in the AJAX handler?
+ *
+ *   - Lets the browser-driven tests/ tests/antispam-test.php harness
+ *     exercise each check in isolation, without going through
+ *     admin-ajax.php or paying the side-effects of wp_mail().
+ *
+ *   - Allows future checks (reCAPTCHA v3, hCaptcha, Tier 2 IP block-list)
+ *     to be added as additional `is_wp_error()` branches without
+ *     touching the AJAX handler.
+ *
+ * The checks, in cheap-to-expensive order:
+ *
+ *   1. Honeypot field ('website_url'). Real humans never fill it
+ *      because it's positioned off-screen via the template's inline
+ *      CSS (position: absolute; left: -9999px) and given
+ *      tabindex="-1" + aria-hidden="true". Volume bots reflexively
+ *      fill every visible field; this one rejects them.
+ *
+ *   2. Submission timing. The 'emifree_ts' hidden field holds
+ *      seconds-since-epoch at page-load time (set by contact.js on
+ *      DOMContentLoaded). Reject submissions where:
+ *        (now - ts) < min   → instant-fire bots (nonce scraped, then
+ *                            immediately POSTed)
+ *        (now - ts) > max   → stale-form-replay attacks (attacker
+ *                            fetches a nonce once and tries to reuse
+ *                            it days later)
+ *      Defaults are configurable via wp-config constants:
+ *        EMIFREE_CONTACT_MIN_SECONDS (default 3)
+ *        EMIFREE_CONTACT_MAX_SECONDS (default 3600 = 1 hour)
+ *
+ *   3. Per-IP rate limit. Counter stored in a WP transient keyed by
+ *      the SHA-256 of the request IP. Caps submissions per IP per
+ *      EMIFREE_CONTACT_RATE_WINDOW (default 1 hour) at
+ *      EMIFREE_CONTACT_RATE_MAX (default 3). Kills scripted spam
+ *      bursts on the 4th attempt.
+ *
+ * All three checks return the same generic user-facing error message
+ * so an attacker can't distinguish which check failed (otherwise they'd
+ * tune their bot to defeat whichever check I add next). The internal
+ * WP_Error CODE (honeypot, ts_missing, ts_out_of_range, rate_limited)
+ * is preserved for diagnostics / tests and is NOT shown to the user.
+ *
+ * @return true|WP_Error
+ */
+function emifree_check_contact_antispam() {
+	$emifree_honeypot = isset( $_POST['website_url'] )
+		? trim( (string) wp_unslash( $_POST['website_url'] ) )
+		: '';
+	if ( '' !== $emifree_honeypot ) {
+		return new WP_Error(
+			'honeypot',
+			__( 'Submission could not be processed. Please try again.', 'emifree-theme' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	$emifree_min_seconds = defined( 'EMIFREE_CONTACT_MIN_SECONDS' ) ? (int) EMIFREE_CONTACT_MIN_SECONDS : 3;
+	$emifree_max_seconds = defined( 'EMIFREE_CONTACT_MAX_SECONDS' ) ? (int) EMIFREE_CONTACT_MAX_SECONDS : 3600;
+	$emifree_ts_raw      = isset( $_POST['emifree_ts'] ) ? (string) wp_unslash( $_POST['emifree_ts'] ) : '';
+	$emifree_ts          = ctype_digit( $emifree_ts_raw ) ? (int) $emifree_ts_raw : 0;
+	if ( ! $emifree_ts ) {
+		return new WP_Error(
+			'ts_missing',
+			__( 'Submission could not be processed. Please try again.', 'emifree-theme' ),
+			array( 'status' => 400 )
+		);
+	}
+	$emifree_elapsed = time() - $emifree_ts;
+	if ( $emifree_elapsed < $emifree_min_seconds || $emifree_elapsed > $emifree_max_seconds ) {
+		return new WP_Error(
+			'ts_out_of_range',
+			__( 'Submission could not be processed. Please try again.', 'emifree-theme' ),
+			array( 'status' => 400 )
+		);
+	}
+
+	$emifree_ip_raw    = isset( $_SERVER['REMOTE_ADDR'] ) ? (string) wp_unslash( $_SERVER['REMOTE_ADDR'] ) : '';
+	$emifree_ip_clean  = trim( $emifree_ip_raw );
+	if ( '' !== $emifree_ip_clean ) {
+		$emifree_rate_max    = defined( 'EMIFREE_CONTACT_RATE_MAX' )    ? (int) EMIFREE_CONTACT_RATE_MAX    : 3;
+		$emifree_rate_window = defined( 'EMIFREE_CONTACT_RATE_WINDOW' ) ? (int) EMIFREE_CONTACT_RATE_WINDOW : HOUR_IN_SECONDS;
+		$emifree_rate_key    = 'emifree_contact_ip_' . hash( 'sha256', $emifree_ip_clean );
+		$emifree_rate_count  = (int) get_transient( $emifree_rate_key );
+		if ( $emifree_rate_count >= $emifree_rate_max ) {
+			return new WP_Error(
+				'rate_limited',
+				__( 'Too many submissions from your network. Please try again later.', 'emifree-theme' ),
+				array( 'status' => 429 )
+			);
+		}
+		// Increment AFTER passing the check so the Nth submission itself counts.
+		// (1st -> count becomes 1, 2nd -> 2, 3rd -> 3, 4th arrives and sees 3 → 429.)
+		set_transient( $emifree_rate_key, $emifree_rate_count + 1, $emifree_rate_window );
+	}
+
+	return true;
+}
+
+/**
  * AJAX handler for the Contact form.
  *
  * Accepts (POST): action=send_contact, emifree_contact_nonce, name,
@@ -586,6 +748,18 @@ function emifree_handle_contact_submit() {
 		wp_send_json_error(
 			array( 'message' => __( 'Security check failed. Please reload the page and try again.', 'emifree-theme' ) ),
 			403
+		);
+	}
+
+	$emifree_antispam = emifree_check_contact_antispam();
+	if ( is_wp_error( $emifree_antispam ) ) {
+		$emifree_code = (int) $emifree_antispam->get_error_data( 'status' );
+		if ( $emifree_code < 100 ) {
+			$emifree_code = 400;
+		}
+		wp_send_json_error(
+			array( 'message' => $emifree_antispam->get_error_message() ),
+			$emifree_code
 		);
 	}
 

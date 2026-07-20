@@ -26,7 +26,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'EMIFREE_SITE_URL' ) ) {
-	define( 'EMIFREE_SITE_URL', 'https://emifree.com' );
+	// Derived from home_url() so the constant is subpath-aware: a root
+	// install produces 'https://emifree.com', a subpath install
+	// (home at /wordpress) produces 'https://emifree.com/wordpress'.
+	// All canonicals, OG/Twitter URLs, and JSON-LD schema URLs are
+	// built off this constant, so making it track the WP-configured
+	// home URL is what keeps the site SEO-correct on any deployment.
+	//
+	// Replaces the previous hardcoded 'https://emifree.com' that broke
+	// every canonical/schema URL on staging subdomains and on subpath
+	// production installs.
+	define( 'EMIFREE_SITE_URL', home_url() );
 }
 
 /**
@@ -126,7 +136,7 @@ function emifree_seo_blog_post( $emifree_post, $emifree_next_post = null ) {
 	$emifree_date     = $emifree_post['date'];
 	$emifree_author   = $emifree_post['author'];
 	$emifree_og_title = $emifree_title . ' | Emifree Engineering Blog';
-	$emifree_url      = EMIFREE_SITE_URL . '/blog/' . $emifree_slug;
+	$emifree_url      = home_url( '/blog/' . $emifree_slug );
 
 	add_action(
 		'wp_head',
@@ -172,7 +182,7 @@ function emifree_seo_blog_post( $emifree_post, $emifree_next_post = null ) {
 				'publisher'        => array(
 					'@type' => 'Organization',
 					'name'  => 'Emifree GmbH',
-					'url'   => EMIFREE_SITE_URL,
+					'url'   => home_url(),
 				),
 				'mainEntityOfPage' => array(
 					'@type' => 'WebPage',

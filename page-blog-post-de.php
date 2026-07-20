@@ -126,7 +126,7 @@ foreach ( emifree_get_all_posts_sorted_de() as $emifree_candidate_slug => $emifr
  * the i18n refactor stays additive.
  */
 $emifree_og_title = $emifree_current_post['title'] . ' | Emifree Engineering-Blog';
-$emifree_url      = EMIFREE_SITE_URL . '/de/blog/' . $emifree_current_post['slug'];
+$emifree_url      = home_url( '/de/blog/' . $emifree_current_post['slug'] );
 
 add_action(
 	'wp_head',
@@ -179,7 +179,7 @@ add_action(
 			'publisher'        => array(
 				'@type' => 'Organization',
 				'name'  => 'Emifree GmbH',
-				'url'   => EMIFREE_SITE_URL,
+				'url'   => home_url(),
 			),
 			'mainEntityOfPage' => array(
 				'@type' => 'WebPage',

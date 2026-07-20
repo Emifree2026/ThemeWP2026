@@ -25,25 +25,25 @@ function emifree_blog_seo() {
 	emifree_seo_page_with_schema(
 		'Emifree Engineering Blog — Industrial Air Filtration Insights',
 		'Technical guides and field insights on industrial oil mist filtration, CNC air quality, mechanical vs electrostatic separation, and EU regulatory compliance. From the Emifree engineering team.',
-		EMIFREE_SITE_URL . '/blog',
+		home_url( '/blog' ),
 		'emifree-blog-schema',
 		array(
 			'@context'    => 'https://schema.org',
 			'@type'       => 'Blog',
 			'name'        => 'Emifree Engineering Blog',
 			'description' => 'Technical guides and field insights on industrial oil mist filtration from the Emifree engineering team.',
-			'url'         => EMIFREE_SITE_URL . '/blog',
+			'url'         => home_url( '/blog' ),
 			'publisher'   => array(
 				'@type' => 'Organization',
 				'name'  => 'Emifree GmbH',
-				'url'   => EMIFREE_SITE_URL,
+				'url'   => home_url(),
 			),
 			'blogPost'    => array_map(
 				static function ( $emifree_p ) {
 					return array(
 						'@type'         => 'BlogPosting',
 						'headline'      => $emifree_p['title'],
-						'url'           => EMIFREE_SITE_URL . '/blog/' . $emifree_p['slug'],
+						'url'           => home_url( '/blog/' . $emifree_p['slug'] ),
 						'datePublished' => $emifree_p['date'],
 						'author'        => array(
 							'@type'    => 'Person',

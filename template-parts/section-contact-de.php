@@ -83,6 +83,21 @@ $emifree_contact_info = array(
 				>
 					<input type="hidden" name="emifree_contact_nonce" value="<?php echo esc_attr( wp_create_nonce( 'emifree_contact' ) ); ?>">
 
+					<?php /*
+					 * Antispam — Tier 1: timestamp + honeypot.
+					 * See EN sibling (template-parts/section-contact.php) for
+					 * the full rationale — identical implementation.
+					 */ ?>
+					<input type="hidden" name="emifree_ts" value="<?php echo esc_attr( time() ); ?>">
+					<input
+						type="text"
+						name="website_url"
+						tabindex="-1"
+						autocomplete="off"
+						aria-hidden="true"
+						style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;"
+					>
+
 					<div>
 						<label for="emifree-contact-name" class="sr-only">Name</label>
 						<input

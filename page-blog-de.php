@@ -46,26 +46,26 @@ $emifree_de_posts = array(
 emifree_seo_page_with_schema(
 	'Emifree Engineering-Blog — Einblicke in industrielle Luftfiltration',
 	'Technische Leitfäden und Praxiseinblicke zur industriellen Ölnebelfiltration, CNC-Luftqualität, mechanischen und elektrostatischen Abscheideverfahren sowie EU-Compliance. Aus dem Engineering-Team von Emifree.',
-	EMIFREE_SITE_URL . '/de/blog',
+	home_url( '/de/blog' ),
 	'emifree-blog-schema-de',
 	array(
 		'@context'    => 'https://schema.org',
 		'@type'       => 'Blog',
 		'name'        => 'Emifree Engineering-Blog',
 		'description' => 'Technische Leitfäden und Praxiseinblicke zur industriellen Ölnebelfiltration aus dem Engineering-Team von Emifree.',
-		'url'         => EMIFREE_SITE_URL . '/de/blog',
+		'url'         => home_url( '/de/blog' ),
 		'inLanguage'  => 'de-DE',
 		'publisher'   => array(
 			'@type' => 'Organization',
 			'name'  => 'Emifree GmbH',
-			'url'   => EMIFREE_SITE_URL,
+			'url'   => home_url(),
 		),
 		'blogPost'    => array_map(
 			static function ( $emifree_p ) {
 				return array(
 					'@type'         => 'BlogPosting',
 					'headline'      => $emifree_p['title'],
-					'url'           => EMIFREE_SITE_URL . '/de/blog/' . $emifree_p['slug'],
+					'url'           => home_url( '/de/blog/' . $emifree_p['slug'] ),
 					'datePublished' => $emifree_p['date'],
 					'inLanguage'    => 'de-DE',
 					'author'        => array(
