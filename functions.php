@@ -601,7 +601,26 @@ function emifree_enqueue_tawk_widget() {
 	if ( is_admin() ) {
 		return;
 	}
-	$emifree_tawk_property_id = '1jsu0245o';
+
+	// Two Tawk dashboards — one per language, configured via wp-config
+	// so staging + production stay in sync via code, not via UI. Override
+	// in wp-config.php; defaults match the live production widgets as of
+	// 2026-07-20.
+	$emifree_tawk_property_id_en = defined( 'EMIFREE_TAWK_PROPERTY_ID_EN' ) && EMIFREE_TAWK_PROPERTY_ID_EN
+		? EMIFREE_TAWK_PROPERTY_ID_EN
+		: '1jsu0245o';
+	$emifree_tawk_property_id_de = defined( 'EMIFREE_TAWK_PROPERTY_ID_DE' ) && EMIFREE_TAWK_PROPERTY_ID_DE
+		? EMIFREE_TAWK_PROPERTY_ID_DE
+		: '1jtvd3ejb';
+
+	// emifree_get_lang() is path-aware (so a /de/visit with no cookie
+	// still serves the DE widget). That function lives further up in this
+	// file.
+	$emifree_lang          = function_exists( 'emifree_get_lang' ) ? emifree_get_lang() : 'en';
+	$emifree_tawk_property_id = ( 'de' === $emifree_lang )
+		? $emifree_tawk_property_id_de
+		: $emifree_tawk_property_id_en;
+
 	add_action(
 		'wp_footer',
 		static function () use ( $emifree_tawk_property_id ) {
