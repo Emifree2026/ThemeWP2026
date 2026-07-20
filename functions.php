@@ -611,7 +611,7 @@ function emifree_enqueue_tawk_widget() {
 		: '1jsu0245o';
 	$emifree_tawk_property_id_de = defined( 'EMIFREE_TAWK_PROPERTY_ID_DE' ) && EMIFREE_TAWK_PROPERTY_ID_DE
 		? EMIFREE_TAWK_PROPERTY_ID_DE
-		: '1jtvd3ejb';
+		: '1jtvdsd2i';
 
 	// emifree_get_lang() is path-aware (so a /de/visit with no cookie
 	// still serves the DE widget). That function lives further up in this
