@@ -23,7 +23,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 require_once get_template_directory() . '/inc/knowledge.php';
 
 $emifree_requested_slug = get_query_var( 'emifree_blog_slug' );
-$emifree_current_post  = $emifree_requested_slug ? emifree_get_post_by_slug( $emifree_requested_slug ) : null;
+
+// The shim (page-blog-post.php) resolves $emifree_current_post (with
+// $emifree_is_cpt set for CPT-driven posts) BEFORE require_once-ing
+// this template part. Trust those values when present. If the shim
+// didn't set $emifree_current_post (e.g. template-part rendered
+// standalone, or the shim 404'd), fall back to a legacy-array lookup
+// as a defensive measure. CRITICAL: we MUST NOT overwrite the shim's
+// CPT-shaped $emifree_current_post with a legacy-array lookup —
+// CPT slugs aren't in emifree_blog_posts(), so overwriting would
+// null-out the variable and trigger the "Article not found" branch.
+if ( ! isset( $emifree_current_post ) || ! $emifree_current_post ) {
+	$emifree_current_post = $emifree_requested_slug ? emifree_get_post_by_slug( $emifree_requested_slug ) : null;
+	if ( $emifree_current_post ) {
+		$emifree_is_cpt = false;  // legacy lookup, so explicitly not CPT.
+	}
+}
 
 if ( ! $emifree_current_post ) {
 	// Defensive fallback — the shim should have already 404'd.
@@ -50,7 +65,9 @@ foreach ( emifree_get_all_posts_sorted() as $emifree_candidate_slug => $emifree_
 	}
 }
 
-$emifree_body_html = emifree_get_post_body_html( $emifree_current_post['slug'] );
+$emifree_body_html = ! empty( $emifree_is_cpt )
+	? apply_filters( 'the_content', $emifree_current_post['body_raw'] ?? '' )
+	: emifree_get_post_body_html( $emifree_current_post['slug'] );
 ?>
 
 <div class="min-h-screen bg-white">
@@ -120,8 +137,15 @@ $emifree_body_html = emifree_get_post_body_html( $emifree_current_post['slug'] )
 		<meta itemprop="author" content="<?php echo esc_attr( $emifree_current_post['author'] ); ?>">
 		<link itemprop="url" href="<?php echo esc_url( home_url( '/blog/' . $emifree_current_post['slug'] ) ); ?>">
 
-		<div class="text-zinc-700">
-			<?php echo wp_kses_post( $emifree_body_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — sanitized via wp_kses_post. ?>
+		<div class="prose text-zinc-700">
+			<?php
+			if ( ! empty( $emifree_is_cpt ) ) {
+				// Gutenberg content — already sanitized through 'the_content' filter chain.
+				echo $emifree_body_html; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — sanitized via the_content filter.
+			} else {
+				echo wp_kses_post( $emifree_body_html ); // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped — sanitized via wp_kses_post.
+			}
+			?>
 		</div>
 
 		<?php /* ----- Article footer (back-to-all + read-next) ----- */ ?>

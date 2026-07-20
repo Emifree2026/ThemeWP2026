@@ -46,7 +46,12 @@ $emifree_blog_icons = emifree_knowledge_icons();
 		</div>
 
 		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-			<?php foreach ( emifree_blog_posts() as $emifree_post ) : ?>
+			<?php
+			$emifree_blog_index_posts = function_exists( 'emifree_get_all_blog_posts_merged' )
+				? emifree_get_all_blog_posts_merged( 'en' )
+				: emifree_blog_posts();
+			foreach ( $emifree_blog_index_posts as $emifree_post ) :
+				?>
 				<?php emifree_blog_card( $emifree_post ); ?>
 			<?php endforeach; ?>
 		</div>

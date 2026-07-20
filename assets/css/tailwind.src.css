@@ -39,3 +39,96 @@
 		animation: hero-fade-up 0.7s ease-out forwards;
 	}
 }
+
+/* ----- .prose wrapper for CPT-authored blog bodies -----
+ *
+ * Authors wrap their article body in a Group block with class="prose".
+ * Each child heading/paragraph/list/table inside the wrapper picks up
+ * the typography via the selectors below. Every @apply here resolves
+ * to the exact same Tailwind utilities the four legacy posts in
+ * data/posts/*.php already use on every <p>, <h2>, <ul>, <table>, etc.,
+ * so the compiled CSS is byte-equivalent to today's output. Authors
+ * do NOT need to set Tailwind classes on individual blocks.
+ *
+ * The wrapper itself stays compatible with the legacy .text-zinc-700
+ * class on the parent <div> — see template-parts/page-blog-post*.php
+ * where the article body wrapper now carries both classes.
+ */
+@layer components {
+    .prose {
+        color: theme(colors.zinc.700);
+        max-width: none;
+    }
+    .prose > * + * {
+        margin-top: 1.5em;
+    }
+    .prose h2 {
+        @apply text-2xl font-bold text-zinc-900 mt-10 mb-4;
+    }
+    .prose h3 {
+        @apply text-xl font-semibold text-zinc-900 mt-8 mb-3;
+    }
+    .prose h4 {
+        @apply text-lg font-semibold text-zinc-900 mt-6 mb-2;
+    }
+    .prose p {
+        @apply text-lg text-zinc-700 leading-relaxed mb-6;
+    }
+    .prose ul {
+        @apply list-disc pl-6 mb-6 space-y-2 text-lg text-zinc-700;
+    }
+    .prose ol {
+        @apply list-decimal pl-6 mb-6 space-y-3 text-lg text-zinc-700;
+    }
+    .prose li {
+        @apply text-lg text-zinc-700 leading-relaxed;
+    }
+    .prose strong {
+        @apply font-bold text-zinc-900;
+    }
+    .prose em {
+        @apply italic;
+    }
+    .prose a {
+        @apply text-blue-700 underline hover:text-blue-800;
+    }
+    .prose blockquote {
+        @apply border-l-4 border-slate-300 pl-4 italic text-zinc-600 my-6;
+    }
+    .prose code {
+        @apply bg-slate-100 text-zinc-900 px-1.5 py-0.5 rounded text-base;
+    }
+    .prose pre {
+        @apply bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto mb-6 text-base;
+    }
+    .prose table {
+        @apply w-full text-left border-collapse text-base text-zinc-700;
+    }
+    .prose thead tr {
+        @apply border-b border-slate-200;
+    }
+    .prose th {
+        @apply py-3 pr-4 font-semibold text-zinc-900;
+    }
+    .prose tbody tr {
+        @apply border-b border-slate-100 align-top;
+    }
+    .prose tbody tr:last-child {
+        @apply border-b-0;
+    }
+    .prose td {
+        @apply py-3 pr-4;
+    }
+    .prose .table-wrap {
+        @apply overflow-x-auto mb-8;
+    }
+    .prose figure {
+        @apply my-8;
+    }
+    .prose figcaption {
+        @apply text-sm text-zinc-500 mt-2 text-center;
+    }
+    .prose img {
+        @apply rounded-lg my-6 w-full h-auto;
+    }
+}

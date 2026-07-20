@@ -24,36 +24,16 @@ $emifree_knowledge_icons = array(
 	'calendar'     => '<rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line>',
 );
 
-// German blog posts — same shape as inc/knowledge.php emifree_blog_posts(),
-// same metadata the single-post template part uses.
-$emifree_blog_posts = array(
-	'the-strategic-edge-of-clean-air' => array(
-		'id'            => '1',
-		'slug'          => 'the-strategic-edge-of-clean-air',
-		'title'         => 'Der strategische Vorteil sauberer Luft: Warum Hochleistungs-Ölnebelfiltration für die moderne Zerspanung unverzichtbar ist',
-		'excerpt'       => 'Industrielle Ölnebelfiltration ist kein Zubehör, sondern eine strategische Investition in Arbeitssicherheit, Anlagenlebensdauer und Betriebseffizienz in hochpräzisen Fertigungsumgebungen.',
-		'category'      => 'Technischer Leitfaden',
-		'date'          => '2026-06-29',
-		'formatted_date'=> '29. Juni 2026',
-		'read_time'     => '5 Min. Lesezeit',
-		'author'        => 'Victoria Pedroza',
-		'author_role'   => 'Produktmanagerin, Emifree GmbH',
-		'hero_image'    => 'Factory_floor_with_CNC_.webp',
-	),
-	'precision-in-every-breath' => array(
-		'id'            => '2',
-		'slug'          => 'precision-in-every-breath',
-		'title'         => 'Präzision in jedem Atemzug: Ein technischer Leitfaden zur industriellen Ölnebelfiltration',
-		'excerpt'       => 'Ein technischer Vergleich mechanischer und elektrostatischer Ölnebelfiltrationstechnologien – und wie die Absaugung direkt an der Quelle Ihre Mitarbeiter, Ihre Maschinen und Ihr Ergebnis schützt.',
-		'category'      => 'Technischer Leitfaden',
-		'date'          => '2026-06-29',
-		'formatted_date'=> '29. Juni 2026',
-		'read_time'     => '7 Min. Lesezeit',
-		'author'        => 'Victoria Pedroza',
-		'author_role'   => 'Produktmanagerin, Emifree GmbH',
-		'hero_image'    => 'CNC_2.jpg',
-	),
-);
+// German blog posts — sourced from emifree_blog_posts_de() in
+// inc/knowledge.php (same data the shim uses for the merged feed).
+// If the shim resolved a merged DE feed (legacy + CPT), use that
+// instead so newly-published CPT entries show up here too.
+$emifree_blog_posts = function_exists( 'emifree_blog_posts_de' )
+	? emifree_blog_posts_de()
+	: array();
+if ( isset( $emifree_blog_index_posts_de ) && is_array( $emifree_blog_index_posts_de ) ) {
+	$emifree_blog_posts = $emifree_blog_index_posts_de;
+}
 ?>
 
 <div class="min-h-screen bg-white">
@@ -89,14 +69,27 @@ $emifree_blog_posts = array(
 			<?php
 			$emifree_blog_uri = get_template_directory_uri() . '/assets/images/blog/';
 			foreach ( $emifree_blog_posts as $emifree_post ) :
-				$emifree_permalink = '/de/blog/' . $emifree_post['slug'] . '/';
-				$emifree_hero_src  = $emifree_blog_uri . $emifree_post['hero_image'];
-				$emifree_hero_alt  = $emifree_post['title'];
+				$emifree_permalink = '/de/blog/' . ( is_array( $emifree_post ) ? $emifree_post['slug'] : $emifree_post->post_name ) . '/';
+				// Hero image: prefer the explicit `hero_image_url` from
+				// the normalized/CPT shape; otherwise resolve the legacy
+				// `hero_image` filename against the assets dir.
+				if ( is_array( $emifree_post ) && ! empty( $emifree_post['hero_image_url'] ) ) {
+					$emifree_hero_src = (string) $emifree_post['hero_image_url'];
+				} elseif ( is_array( $emifree_post ) && ! empty( $emifree_post['hero_image'] ) ) {
+					$emifree_hero_src = $emifree_blog_uri . $emifree_post['hero_image'];
+				} else {
+					$emifree_hero_src = '';
+				}
+				$emifree_hero_alt  = is_array( $emifree_post ) ? $emifree_post['title'] : get_the_title( $emifree_post );
+				$emifree_category  = is_array( $emifree_post ) ? ( $emifree_post['category'] ?? '' ) : (string) get_post_meta( $emifree_post->ID, 'emifree_category', true );
+				$emifree_formatted = is_array( $emifree_post ) ? ( $emifree_post['formatted_date'] ?? '' ) : mysql2date( get_option( 'date_format' ), $emifree_post->post_date );
+				$emifree_read_time = is_array( $emifree_post ) ? ( $emifree_post['read_time'] ?? '' ) : (string) get_post_meta( $emifree_post->ID, 'emifree_read_time', true );
+				$emifree_excerpt   = is_array( $emifree_post ) ? ( $emifree_post['excerpt'] ?? '' ) : $emifree_post->post_excerpt;
 				?>
 				<a
 					href="<?php echo esc_url( $emifree_permalink ); ?>"
 					class="group relative block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-slate-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-					aria-label="<?php echo esc_attr( 'Artikel lesen: ' . $emifree_post['title'] ); ?>"
+					aria-label="<?php echo esc_attr( 'Artikel lesen: ' . $emifree_hero_alt ); ?>"
 				>
 					<div class="h-40 bg-gradient-to-br from-slate-100 to-blue-50 relative overflow-hidden">
 						<img
@@ -112,20 +105,20 @@ $emifree_blog_posts = array(
 
 					<div class="p-5">
 						<span class="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded-full">
-							<?php echo esc_html( $emifree_post['category'] ); ?>
+							<?php echo esc_html( $emifree_category ); ?>
 						</span>
 
 						<h3 class="text-lg font-bold text-zinc-900 mt-3 mb-2 line-clamp-2 group-hover:text-blue-700 transition-colors">
-							<?php echo esc_html( $emifree_post['title'] ); ?>
+							<?php echo esc_html( $emifree_hero_alt ); ?>
 						</h3>
 
 						<p class="text-sm text-slate-600 mb-4 line-clamp-2">
-							<?php echo esc_html( $emifree_post['excerpt'] ); ?>
+							<?php echo esc_html( $emifree_excerpt ); ?>
 						</p>
 
 						<div class="flex items-center justify-between text-xs text-slate-500">
-							<span><?php echo esc_html( $emifree_post['formatted_date'] ); ?></span>
-							<span><?php echo esc_html( $emifree_post['read_time'] ); ?></span>
+							<span><?php echo esc_html( $emifree_formatted ); ?></span>
+							<span><?php echo esc_html( $emifree_read_time ); ?></span>
 						</div>
 					</div>
 				</a>

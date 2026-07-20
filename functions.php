@@ -40,6 +40,14 @@ require_once get_template_directory() . '/inc/seo.php';
 // front-page and the legal pages.
 require_once get_template_directory() . '/inc/analytics.php';
 
+// Blog CPT — blog_post custom post type + meta + sidebar meta box +
+// slug-mirroring helper. Registered as invisible to the front end
+// (rewrite=false, publicly_queryable=false) so the existing
+// ^blog/([^/]+)/?$ rewrite in emifree_register_blog_route() stays the
+// canonical source of routing. CPT entries are resolved per-request
+// inside the page-blog-post*.php shims.
+require_once get_template_directory() . '/inc/cpt-blog.php';
+
 /**
  * Home subpath — the directory under which WordPress is installed
  * on this site, derived from home_url(). '' for a root install
@@ -255,6 +263,7 @@ add_action( 'template_redirect', 'emifree_route_legal_template' );
 function emifree_flush_section_rewrite_rules() {
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
+	emifree_register_blog_cpt();
 	flush_rewrite_rules( false );
 }
 add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
@@ -272,12 +281,13 @@ add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
  * unified flush from firing.
  */
 function emifree_maybe_flush_section_routes() {
-	if ( get_transient( 'emifree_section_routes_flushed_v6' ) ) {
+	if ( get_transient( 'emifree_section_routes_flushed_v7' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
 	emifree_register_homepage_lang_route();
+	emifree_register_blog_cpt();
 	// Hard flush (true) — the soft flush (false) only updates when rules
 	// changed, which can leave stale v4 rules in the DB if the v4 transient
 	// was set under a different code path. Hard flush is idempotent and
@@ -289,7 +299,8 @@ function emifree_maybe_flush_section_routes() {
 	delete_transient( 'emifree_section_routes_flushed_v3' );
 	delete_transient( 'emifree_section_routes_flushed_v4' );
 	delete_transient( 'emifree_section_routes_flushed_v5' );
-	set_transient( 'emifree_section_routes_flushed_v6', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_section_routes_flushed_v6' );
+	set_transient( 'emifree_section_routes_flushed_v7', 1, DAY_IN_SECONDS );
 }
 add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
 
