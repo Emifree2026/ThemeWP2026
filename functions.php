@@ -60,6 +60,12 @@ require_once get_template_directory() . '/inc/sitemap.php';
 // being non-empty (defaults to empty in wp-config); no-op locally.
 require_once get_template_directory() . '/inc/indexnow.php';
 
+// Built-in SMTP settings page (no plugin required). Registers
+// Settings → Emifree SMTP and wires the saved credentials into
+// PHPMailer via the phpmailer_init action so wp_mail() delivers
+// through a real SMTP server on hosts without a local MTA.
+require_once get_template_directory() . '/inc/smtp-settings.php';
+
 /**
  * Home subpath — the directory under which WordPress is installed
  * on this site, derived from home_url(). '' for a root install
@@ -872,10 +878,36 @@ function emifree_handle_contact_submit() {
 	$emifree_headers = array( 'Reply-To: ' . $emifree_name . ' <' . $emifree_email . '>' );
 	$emifree_sent    = wp_mail( $emifree_recipient, $emifree_subject, $emifree_body, $emifree_headers );
 
+	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
+		// Trace every submission in debug mode so admins can confirm the
+		// handler ran even when the SMTP transport silently drops mail.
+		// (Hospitals/clinics/test installs often have no MTA at all; the
+		// log is the only durable record.)
+		error_log( sprintf(
+			'[emifree-contact] attempt: to=%s subject="%s" sent=%s',
+			$emifree_recipient,
+			$emifree_subject,
+			$emifree_sent ? 'true' : 'false'
+		) );
+	}
+
 	if ( ! $emifree_sent ) {
 		// Don't leak server config to the form. Log internally; tell
 		// the user to email us directly (the recipient address is shown
 		// in the contact-info cards just above the form).
+		//
+		// Always log the full submission body on failure — even when
+		// WP_DEBUG is off. The form's user-facing error banner says
+		// "we couldn't send your message automatically, please email
+		// us directly"; this log line gives the admin the actual
+		// message so they can recover it. PII exposure is acceptable
+		// because only the site admin sees the PHP error log, and the
+		// alternative is losing genuine customer enquiries.
+		error_log( sprintf(
+			"[emifree-contact] wp_mail() failed — submission to %s discarded from SMTP. Body follows:\n%s",
+			$emifree_recipient,
+			$emifree_body
+		) );
 		if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 			error_log( '[emifree-contact] wp_mail() failed for recipient: ' . $emifree_recipient );
 		}

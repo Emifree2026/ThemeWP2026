@@ -58,7 +58,7 @@ if ( ! $emifree_current_post ) {
 	}
 	status_header( 404 );
 	nocache_headers();
-	echo '<h1>Article not found</h1><p><a href="/blog">Back to all articles</a></p>';
+	echo '<h1>Article not found</h1><p><a href="' . esc_url( home_url( '/blog/' ) ) . '">Back to all articles</a></p>';
 	exit;
 }
 

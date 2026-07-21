@@ -69,6 +69,16 @@ const rc = spawnSync(
   { cwd: STAGING, stdio: 'inherit' },
 );
 
+// 7z with cwd=STAGING + relative OUT writes the zip INSIDE the staging
+// dir, but the rest of the script expects it at the OUT path. Move it
+// before cleaning up staging so the zip survives.
+const stagingZip = path.join(STAGING, TOPDIR + '.zip');
+try {
+  await fs.rename(stagingZip, OUT);
+} catch (e) {
+  if (e.code !== 'ENOENT') throw e;
+}
+
 // Clean up staging regardless of outcome
 await fs.rm(STAGING, { recursive: true, force: true });
 

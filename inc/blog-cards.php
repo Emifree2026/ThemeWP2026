@@ -64,7 +64,10 @@ function emifree_featured_blog_card( $emifree_post ) {
 	}
 
 	$emifree_icons     = emifree_knowledge_icons();
-	$emifree_permalink = '/blog/' . ( is_array( $emifree_post ) ? $emifree_post['slug'] : $emifree_post->post_name ) . '/';
+	// home_url() preserves the WP install subpath (e.g. '/wordpress/...'
+	// on a subpath install, '/' on a root install). A bare '/blog/...'
+	// would drop the subpath on click and 404.
+	$emifree_permalink = home_url( '/blog/' . ( is_array( $emifree_post ) ? $emifree_post['slug'] : $emifree_post->post_name ) . '/' );
 	$emifree_hero_src  = emifree_blog_card_hero_src( $emifree_post );
 	$emifree_title     = is_array( $emifree_post ) ? $emifree_post['title'] : get_the_title( $emifree_post );
 	$emifree_hero_alt  = $emifree_title;
@@ -148,7 +151,10 @@ function emifree_blog_card( $emifree_post ) {
 		return;
 	}
 
-	$emifree_permalink = '/blog/' . ( is_array( $emifree_post ) ? $emifree_post['slug'] : $emifree_post->post_name ) . '/';
+	// See note in emifree_featured_blog_card() above — home_url() keeps
+	// the WP install subpath in the href, which a bare '/blog/...' would
+	// lose on subpath installs like /wordpress/.
+	$emifree_permalink = home_url( '/blog/' . ( is_array( $emifree_post ) ? $emifree_post['slug'] : $emifree_post->post_name ) . '/' );
 	$emifree_hero_src  = emifree_blog_card_hero_src( $emifree_post );
 	$emifree_title     = is_array( $emifree_post ) ? $emifree_post['title'] : get_the_title( $emifree_post );
 	$emifree_hero_alt  = $emifree_title;

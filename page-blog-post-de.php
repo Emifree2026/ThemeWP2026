@@ -129,7 +129,7 @@ if ( ! $emifree_current_post ) {
 	}
 	status_header( 404 );
 	nocache_headers();
-	echo '<h1>Artikel nicht gefunden</h1><p><a href="/de/blog">Zurück zu allen Artikeln</a></p>';
+	echo '<h1>Artikel nicht gefunden</h1><p><a href="' . esc_url( home_url( '/de/blog/' ) ) . '">Zurück zu allen Artikeln</a></p>';
 	exit;
 }
 

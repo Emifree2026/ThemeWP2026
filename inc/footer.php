@@ -37,32 +37,37 @@ if ( ! function_exists( 'emifree_footer_links' ) ) :
 		if ( $emifree_is_de ) {
 			return array(
 				'Unternehmen' => array(
-					array( 'name' => 'Blog',    'href' => '/de/blog'   ),
-					array( 'name' => 'Kontakt', 'href' => '/de/#contact' ),
+					// home_url() preserves the WP install subpath on subpath
+					// installs (e.g. /wordpress/de/...). A bare '/de/...'
+					// href would drop the subpath on click and 404.
+					array( 'name' => 'Blog',    'href' => home_url( '/de/blog/' ) ),
+					array( 'name' => 'Kontakt', 'href' => home_url( '/de/#contact' ) ),
 				),
 				'Ressourcen' => array(
-					array( 'name' => 'Fallstudien', 'href' => '/de/#knowledge' ),
+					array( 'name' => 'Fallstudien', 'href' => home_url( '/de/#knowledge' ) ),
 				),
 				'Legal'      => array(
-					array( 'name_en' => 'Imprint',              'name_de' => 'Impressum',            'href_en' => '/impressum',              'href_de' => '/de/impressum' ),
-					array( 'name_en' => 'Privacy Policy',       'name_de' => 'Datenschutz',          'href_en' => '/privacy',                'href_de' => '/de/datenschutz' ),
-					array( 'name_en' => 'General Terms (GTC)',  'name_de' => 'AGB',                  'href_en' => '/terms',                  'href_de' => '/de/agb' ),
+					array( 'name_en' => 'Imprint',              'name_de' => 'Impressum',            'href_en' => home_url( '/impressum/' ),     'href_de' => home_url( '/de/impressum/' ) ),
+					array( 'name_en' => 'Privacy Policy',       'name_de' => 'Datenschutz',          'href_en' => home_url( '/privacy/' ),       'href_de' => home_url( '/de/datenschutz/' ) ),
+					array( 'name_en' => 'General Terms (GTC)',  'name_de' => 'AGB',                  'href_en' => home_url( '/terms/' ),         'href_de' => home_url( '/de/agb/' ) ),
 				),
 			);
 		}
 
 		return array(
 			'Company'   => array(
-				array( 'name' => 'Blog',    'href' => '/blog'    ),
-				array( 'name' => 'Contact', 'href' => '/#contact' ),
+				// See note above — home_url() preserves the WP install
+				// subpath on subpath installs.
+				array( 'name' => 'Blog',    'href' => home_url( '/blog/' ) ),
+				array( 'name' => 'Contact', 'href' => home_url( '/#contact' ) ),
 			),
 			'Resources' => array(
-				array( 'name' => 'Case Studies', 'href' => '/#knowledge' ),
+				array( 'name' => 'Case Studies', 'href' => home_url( '/#knowledge' ) ),
 			),
 			    'Legal'     => array(
-				    array( 'name_en' => 'Imprint',              'name_de' => 'Impressum',            'href_en' => '/impressum',              'href_de' => '/de/impressum' ),
-				    array( 'name_en' => 'Privacy Policy',       'name_de' => 'Datenschutz',          'href_en' => '/privacy',                'href_de' => '/de/datenschutz' ),
-				    array( 'name_en' => 'General Terms (GTC)',  'name_de' => 'AGB',                  'href_en' => '/terms',                  'href_de' => '/de/agb' ),
+				    array( 'name_en' => 'Imprint',              'name_de' => 'Impressum',            'href_en' => home_url( '/impressum/' ),     'href_de' => home_url( '/de/impressum/' ) ),
+				    array( 'name_en' => 'Privacy Policy',       'name_de' => 'Datenschutz',          'href_en' => home_url( '/privacy/' ),       'href_de' => home_url( '/de/datenschutz/' ) ),
+				    array( 'name_en' => 'General Terms (GTC)',  'name_de' => 'AGB',                  'href_en' => home_url( '/terms/' ),         'href_de' => home_url( '/de/agb/' ) ),
 			    ),
 		);
 	}

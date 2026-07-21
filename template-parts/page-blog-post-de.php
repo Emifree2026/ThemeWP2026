@@ -46,7 +46,7 @@ if ( ! $emifree_current_post ) {
 		<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
 			<h1 class="text-3xl font-bold text-zinc-900 mb-4">Artikel nicht gefunden</h1>
 			<p class="text-zinc-600 mb-6">Der gesuchte Beitrag existiert nicht oder wurde verschoben.</p>
-			<a href="/de/blog" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium">
+			<a href="<?php echo esc_url( home_url( '/de/blog/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium">
 				Zurück zu allen Artikeln
 			</a>
 		</div>
@@ -93,7 +93,7 @@ if ( $emifree_is_cpt ) {
 	<?php /* ----- Header band ----- */ ?>
 	<div class="bg-slate-50 border-b border-slate-200">
 		<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-12">
-			<a href="/de" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( home_url( '/de/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -102,9 +102,9 @@ if ( $emifree_is_cpt ) {
 			</a>
 
 			<nav aria-label="Brotkrumen" class="mb-6 text-sm text-zinc-500">
-				<a href="/de" class="hover:text-blue-700">Startseite</a>
+				<a href="<?php echo esc_url( home_url( '/de/' ) ); ?>" class="hover:text-blue-700">Startseite</a>
 				<span class="mx-2" aria-hidden="true">/</span>
-				<a href="/de/blog" class="hover:text-blue-700">Blog</a>
+				<a href="<?php echo esc_url( home_url( '/de/blog/' ) ); ?>" class="hover:text-blue-700">Blog</a>
 				<span class="mx-2" aria-hidden="true">/</span>
 				<span class="text-zinc-700"><?php echo esc_html( $emifree_current_post['category'] ); ?></span>
 			</nav>
@@ -169,7 +169,7 @@ if ( $emifree_is_cpt ) {
 		<?php /* ----- Article footer (back-to-all + read-next) ----- */ ?>
 		<div class="mt-16 pt-8 border-t border-slate-200">
 			<div class="flex items-center justify-between mb-8">
-				<a href="/de/blog" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
+				<a href="<?php echo esc_url( home_url( '/de/blog/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
 					<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 						<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -179,7 +179,7 @@ if ( $emifree_is_cpt ) {
 			</div>
 
 			<?php if ( $emifree_next_post ) : ?>
-				<a href="/de/blog/<?php echo esc_attr( $emifree_next_post['slug'] ); ?>/" class="group block bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-2xl p-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
+				<a href="<?php echo esc_url( home_url( '/de/blog/' . $emifree_next_post['slug'] . '/' ) ); ?>" class="group block bg-slate-50 hover:bg-blue-50 border border-slate-200 hover:border-blue-200 rounded-2xl p-6 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2">
 					<p class="text-xs font-semibold uppercase tracking-wider text-blue-700 mb-2">Als Nächstes lesen</p>
 					<p class="text-lg font-bold text-zinc-900 group-hover:text-blue-800 leading-snug">
 						<?php echo esc_html( $emifree_next_post['title'] ); ?>

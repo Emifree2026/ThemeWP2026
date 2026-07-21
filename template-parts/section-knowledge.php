@@ -107,7 +107,7 @@ $emifree_knowledge_tabs = array(
 
 			<div class="text-center">
 				<a
-					href="/blog"
+					href="<?php echo esc_url( home_url( '/blog/' ) ); ?>"
 					class="inline-flex items-center gap-2 bg-white border-2 border-blue-700 text-blue-700 px-8 py-3 rounded-full font-semibold hover:bg-blue-700 hover:text-white transition-all duration-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
 				>
 					View All Articles

@@ -480,7 +480,7 @@ function emifree_render_terms_body( $lang = 'en' ): string {
 
 		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 8 Data Protection Note</h2>
 		<p class="text-lg leading-relaxed mb-8">
-			Information concerning the collection, storage, and processing of personal data does not form part of these commercial terms and conditions and is governed exclusively and separately by the Seller's designated <a href="/privacy" class="text-blue-700 hover:text-blue-800 underline">Privacy Policy</a>.
+			Information concerning the collection, storage, and processing of personal data does not form part of these commercial terms and conditions and is governed exclusively and separately by the Seller's designated <a href="<?php echo esc_url( home_url( '/privacy/' ) ); ?>" class="text-blue-700 hover:text-blue-800 underline">Privacy Policy</a>.
 		</p>
 
 		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 9 Governing Law, Jurisdiction &amp; Severability</h2>
@@ -748,7 +748,7 @@ function emifree_render_agb_de_body( $lang = 'de' ): string {
 
 		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 8 Datenschutzhinweis</h2>
 		<p class="text-lg leading-relaxed mb-8">
-			Informationen zur Erhebung, Speicherung und Verarbeitung personenbezogener Daten sind nicht Bestandteil dieser Geschäftsbedingungen und werden ausschließlich und gesondert durch die <a href="/de/datenschutz" class="text-blue-700 hover:text-blue-800 underline">Datenschutzerklärung</a> des Verkäufers geregelt.
+			Informationen zur Erhebung, Speicherung und Verarbeitung personenbezogener Daten sind nicht Bestandteil dieser Geschäftsbedingungen und werden ausschließlich und gesondert durch die <a href="<?php echo esc_url( home_url( '/de/datenschutz/' ) ); ?>" class="text-blue-700 hover:text-blue-800 underline">Datenschutzerklärung</a> des Verkäufers geregelt.
 		</p>
 
 		<h2 class="text-2xl font-bold text-zinc-900 mt-10 mb-4">§ 9 Anwendbares Recht, Gerichtsstand &amp; Salvatorische Klausel</h2>

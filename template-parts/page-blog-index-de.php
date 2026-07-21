@@ -41,7 +41,7 @@ if ( isset( $emifree_blog_index_posts_de ) && is_array( $emifree_blog_index_post
 	<?php /* ----- Header band ----- */ ?>
 	<div class="bg-slate-50 border-b border-slate-200">
 		<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20 pb-16">
-			<a href="/de" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
+			<a href="<?php echo esc_url( home_url( '/de/' ) ); ?>" class="inline-flex items-center gap-2 text-blue-700 hover:text-blue-800 font-medium mb-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 rounded">
 				<svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" aria-hidden="true">
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5"></path>
 					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m12 19-7-7 7-7"></path>
@@ -69,7 +69,10 @@ if ( isset( $emifree_blog_index_posts_de ) && is_array( $emifree_blog_index_post
 			<?php
 			$emifree_blog_uri = get_template_directory_uri() . '/assets/images/blog/';
 			foreach ( $emifree_blog_posts as $emifree_post ) :
-				$emifree_permalink = '/de/blog/' . ( is_array( $emifree_post ) ? $emifree_post['slug'] : $emifree_post->post_name ) . '/';
+				// home_url() preserves the WP install subpath on subpath
+				// installs. A bare '/de/blog/...' would drop the subpath
+				// on click and 404.
+				$emifree_permalink = home_url( '/de/blog/' . ( is_array( $emifree_post ) ? $emifree_post['slug'] : $emifree_post->post_name ) . '/' );
 				// Hero image: prefer the explicit `hero_image_url` from
 				// the normalized/CPT shape; otherwise resolve the legacy
 				// `hero_image` filename against the assets dir.
