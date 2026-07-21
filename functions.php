@@ -153,6 +153,17 @@ function emifree_enqueue_assets() {
 		true
 	);
 
+	// Page-level script — hero video autoplay retry, sticky header,
+	// mobile menu toggle, contact form AJAX, smooth-scroll. Loaded
+	// globally because the hero + header render on every page.
+	wp_enqueue_script(
+		'emifree-page',
+		get_template_directory_uri() . '/assets/js/main.js',
+		array( 'emifree-header' ),
+		EMIFREE_THEME_VERSION,
+		true
+	);
+
 	// Subpath metadata — header.js needs to know where WordPress is
 	// installed so language-swap math and nav-link click handlers
 	// preserve the install subpath on subpath installs like

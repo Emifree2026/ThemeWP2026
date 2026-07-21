@@ -24,7 +24,7 @@
 			loop
 			playsinline
 			webkit-playsinline
-			preload="auto"
+			preload="metadata"
 			poster="<?php echo esc_url( get_template_directory_uri() . '/assets/images/emilogo.png' ); ?>"
 			class="absolute inset-0 w-full h-full object-cover hero-fade-in"
 		>

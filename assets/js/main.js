@@ -1,39 +1,58 @@
-// Video carousel
-const videos = [
-    document.getElementById('hero-video-0'),
-    document.getElementById('hero-video-1')
-];
-let activeVideo = 0;
+// Hero background video — autoplay on every paint.
+//
+// The template-parts emit a single <video id="hero-video"> (the
+// previous agent's dual-video carousel was rolled back when the
+// landing page was migrated from React to WordPress — see
+// template-parts/section-hero.php for the matching comment). The
+// page-level autoplay attribute on the <video> element fires the
+// first paint attempt; this script catches any case where the
+// autoplay attribute was blocked (mobile Safari data-saver, iOS
+// Low Power Mode, autoplay disabled by browser policy) and
+// retries, plus logs a debug breadcrumb when even the retry is
+// rejected so the failure is visible in dev tools.
+//
+// Single source of truth: the markup's autoplay attribute is what
+// we trust on initial load. JS only kicks in if autoplay didn't
+// take — typically because the user gesture gate wasn't satisfied
+// yet (mobile) or the muted/playsinline hint was missed.
+const heroVideo = document.getElementById('hero-video');
 
-function switchVideo(index) {
-    if (activeVideo === index) return;
-    videos[activeVideo].style.opacity = '0';
-    videos[index].style.opacity = '1';
-    videos[index].currentTime = 0;
-    videos[index].play();
-    activeVideo = index;
-    // Update dots
-    document.querySelectorAll('.hero-dot').forEach((dot, i) => {
-        if (i === index) {
-            dot.classList.add('bg-emerald-400', 'w-6');
-            dot.classList.remove('bg-white/30', 'w-1.5');
-        } else {
-            dot.classList.remove('bg-emerald-400', 'w-6');
-            dot.classList.add('bg-white/30', 'w-1.5');
-        }
-    });
+if (heroVideo) {
+    // Loop is set in markup but some browsers (older mobile Safari)
+    // drop the loop attribute on programmatic load. Re-assert.
+    heroVideo.loop = true;
+
+    // Two-stage autoplay retry.
+    //
+    // Stage 1: try to play immediately on script load. This catches
+    // desktop browsers and any mobile browser that allowed the
+    // markup's autoplay attribute to fire.
+    const emifreePlayPromise = heroVideo.play();
+    if (emifreePlayPromise && typeof emifreePlayPromise.catch === 'function') {
+        emifreePlayPromise.catch(function () {
+            // Stage 1 rejected — typically iOS Safari data-saver
+            // mode or Low Power Mode blocking autoplay until the
+            // first user gesture. Defer retry until first touch.
+            // Once-flag so we don't pile up listeners if multiple
+            // events fire in quick succession.
+            if (heroVideo.dataset.emifreeGestureArmed === '1') { return; }
+            heroVideo.dataset.emifreeGestureArmed = '1';
+
+            const emifreeArmedEvents = ['touchstart', 'pointerdown', 'mousedown', 'keydown', 'scroll'];
+            const emifreeArmPlay = function () {
+                heroVideo.play().catch(function (e) {
+                    console.log('Hero autoplay still blocked after gesture:', e);
+                });
+                emifreeArmedEvents.forEach(function (ev) {
+                    window.removeEventListener(ev, emifreeArmPlay, { capture: true });
+                });
+            };
+            emifreeArmedEvents.forEach(function (ev) {
+                window.addEventListener(ev, emifreeArmPlay, { capture: true, passive: true });
+            });
+        });
+    }
 }
-
-// Play first video and set ended event
-if (videos[0]) {
-    videos[0].play().catch(e => console.log('Autoplay prevented:', e));
-    videos[0].addEventListener('ended', () => switchVideo(1));
-    videos[1].addEventListener('ended', () => switchVideo(0));
-}
-
-document.querySelectorAll('.hero-dot').forEach(btn => {
-    btn.addEventListener('click', () => switchVideo(parseInt(btn.dataset.video)));
-});
 
 // Scroll header background
 window.addEventListener('scroll', () => {
@@ -68,10 +87,10 @@ if (contactForm) {
             company: formData.get('company'),
             message: formData.get('message')
         };
-        
+
         // Clear previous errors
         document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
-        
+
         try {
             const response = await fetch(emifree_ajax.ajax_url, {
                 method: 'POST',
