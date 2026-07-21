@@ -24,6 +24,12 @@ const EXCLUDE_PATHS = [
   /^NEXT_AGENT_HANDOVER.*\.md$/i,
   /^RELEASE_NOTE\.md$/i,
   /^Blog\d+_de\.md$/i,
+  // Built theme zips — if these exist in the working tree (e.g. the
+  // user dropped the previous build alongside the source), exclude
+  // them so the next build doesn't compound in size. Same for
+  // extracted zip directories.
+  /^emifree-landing[^/\\]*\.zip$/i,
+  /^emifree-landing[^/\\]*$/i,
 ];
 
 async function walk(dir, base = dir) {
