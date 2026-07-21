@@ -21,8 +21,13 @@ $emifree_hero = emifree_hero_data();
 
 <section id="hero" class="relative w-full min-h-[100dvh] flex flex-col overflow-hidden bg-[#0a0a0a]">
 
-	<!-- Background video — single source. -->
-	<div class="absolute inset-0 w-full h-full">
+	<!-- Background video — single source. preload="metadata" is the
+	     mobile-safe default: the browser fetches only the header bytes
+	     (so the poster is replaced as soon as the first frame is
+	     decoded) instead of the whole file, which is what blocks
+	     autoplay on cellular connections. autoplay/loop on mobile
+	     require muted + playsinline (both set). -->
+	<div class="absolute inset-0 w-full h-full bg-[#0a0a0a]">
 		<video
 			id="hero-video"
 			autoplay
@@ -30,7 +35,7 @@ $emifree_hero = emifree_hero_data();
 			loop
 			playsinline
 			webkit-playsinline
-			preload="auto"
+			preload="metadata"
 			poster="<?php echo esc_url( get_template_directory_uri() . '/assets/images/emilogo.png' ); ?>"
 			class="absolute inset-0 w-full h-full object-cover hero-fade-in"
 		>

@@ -22,6 +22,33 @@
 		return;
 	}
 
+	// Subpath metadata — see emifreeSite localize in functions.php. The
+	// path-swap math below treats the URL as if WordPress were installed
+	// at the document root, then prepends the subpath on the way back
+	// out. This keeps the same code working on both root installs
+	// (homeSubpath='') and subpath installs (homeSubpath='/wordpress').
+	const EMIFREE_HOME_SUBPATH =
+		( window.emifreeSite && window.emifreeSite.homeSubpath ) || '';
+
+	function emifreeStripSubpath( path ) {
+		if ( EMIFREE_HOME_SUBPATH && path.startsWith( EMIFREE_HOME_SUBPATH ) ) {
+			return path.substring( EMIFREE_HOME_SUBPATH.length ) || '/';
+		}
+		return path;
+	}
+
+	function emifreeApplySubpath( path ) {
+		if ( ! EMIFREE_HOME_SUBPATH ) {
+			return path;
+		}
+		// Don't double-prepend if the path already includes the subpath
+		// (defensive — callers normally pass site-relative paths).
+		if ( path.startsWith( EMIFREE_HOME_SUBPATH ) ) {
+			return path;
+		}
+		return EMIFREE_HOME_SUBPATH + path;
+	}
+
 	// ---- Sticky-on-scroll: backdrop blur past threshold ----
 	// Throttled via requestAnimationFrame so iOS Safari scroll (~60 events
 	// per second) doesn't trigger 60 classList mutations per second.
@@ -68,8 +95,17 @@
 			}
 		} );
 
-		// Close mobile menu when a nav link is clicked (in-page anchor)
-		emifreeMobileMenu.querySelectorAll( 'a[href^="#"]' ).forEach( ( anchor ) => {
+		// Close mobile menu when a nav link is clicked. The selector covers
+		// three href shapes the theme emits:
+		//   - "#anchor"            bare fragment (not currently used in
+		//                          mobile nav, but harmless to handle)
+		//   - "/de/#anchor"        DE absolute path with fragment
+		//   - "/#anchor"           EN absolute path with fragment
+		// The smooth-scroll handler below decides whether to intercept
+		// the navigation; this handler just guarantees the menu closes
+		// (otherwise the document outside-click handler races the link
+		// click and the menu can stay open on slow mobile networks).
+		emifreeMobileMenu.querySelectorAll( 'a[href^="#"], a[href^="/#"], a[href^="/de/#"]' ).forEach( ( anchor ) => {
 			anchor.addEventListener( 'click', () => {
 				emifreeMobileMenu.classList.add( 'hidden' );
 				emifreeMobileBtn.setAttribute( 'aria-expanded', 'false' );
@@ -176,7 +212,12 @@
 		// Returns the URL to navigate to after the user picks a language,
 		// or the current pathname if no navigation is needed.
 		//
-		// Rules:
+		// All math runs in SITE-RELATIVE space (the WP install subpath
+		// is stripped at entry and re-prepended at exit) so the same
+		// code works on root installs (subpath='') and subpath installs
+		// (subpath='/wordpress').
+		//
+		// Rules (in site-relative space):
 		//   - DE selection: prepend /de/ if not already there. Homepage
 		//     paths (/, /en, /en/) all map to /de/.
 		//   - EN selection: strip /de/ prefix to land on the EN equivalent.
@@ -185,38 +226,38 @@
 		//     /en/{slug}/ siblings don't ship yet.
 		function emifreeComputeLangTarget( code ) {
 				const emifreeLangLower = String( code ).toLowerCase();
-				const emifreeCurPath   = window.location.pathname;
-				const emifreeIsHome    = '/' === emifreeCurPath
-					|| '/en' === emifreeCurPath
-					|| '/en/' === emifreeCurPath;
+				const emifreeCurSite   = emifreeStripSubpath( window.location.pathname );
+				const emifreeIsHome    = '/' === emifreeCurSite
+					|| '/en' === emifreeCurSite
+					|| '/en/' === emifreeCurSite;
 				if ( 'de' === emifreeLangLower ) {
-					if ( emifreeCurPath.startsWith( '/de' ) ) {
-						return emifreeCurPath;
+					if ( emifreeCurSite.startsWith( '/de' ) ) {
+						return emifreeApplySubpath( emifreeCurSite );
 					}
-					return '/de' + ( emifreeIsHome ? '/' : emifreeCurPath );
+					return emifreeApplySubpath( '/de' + ( emifreeIsHome ? '/' : emifreeCurSite ) );
 				}
 				if ( 'en' === emifreeLangLower ) {
-					if ( emifreeCurPath.startsWith( '/de' ) ) {
+					if ( emifreeCurSite.startsWith( '/de' ) ) {
 						// Homepage case: /de or /de/ → /en/. The bare replace
 						// below would yield "/" which 301s back to /de/ via
 						// emifree_maybe_redirect_home_to_de(), so we have to
 						// short-circuit explicitly here.
-						if ( '/de' === emifreeCurPath || '/de/' === emifreeCurPath ) {
-							return '/en/';
+						if ( '/de' === emifreeCurSite || '/de/' === emifreeCurSite ) {
+							return emifreeApplySubpath( '/en/' );
 						}
 						// Non-homepage /de/* route — strip the /de prefix to
 						// land on the EN equivalent (e.g. /de/impressum/ →
 						// /impressum/). Slugs without an EN counterpart
 						// (e.g. /de/datenschutz/, /de/agb/) will hit a 404
 						// until /en/{slug}/ siblings ship.
-						return emifreeCurPath.replace( /^\/de/, '' );
+						return emifreeApplySubpath( emifreeCurSite.replace( /^\/de/, '' ) );
 					}
 					if ( emifreeIsHome ) {
-						return '/en/';
+						return emifreeApplySubpath( '/en/' );
 					}
-					return emifreeCurPath; // no-op: no /en/{slug}/ sibling yet
+					return emifreeApplySubpath( emifreeCurSite ); // no-op: no /en/{slug}/ sibling yet
 				}
-				return emifreeCurPath;
+				return emifreeApplySubpath( emifreeCurSite );
 			}
 
 		emifreeLangMenu.querySelectorAll( '.emifree-lang-option' ).forEach( ( btn ) => {
@@ -334,7 +375,7 @@
 	// already on the same path; otherwise let the browser navigate.
 	// The same-path check covers both / and /de/ so a click on
 	// /de/#products from /de/ still scrolls in place (no full reload).
-	document.querySelectorAll( 'a[href^="#"], a[href^="/#"]' ).forEach( ( anchor ) => {
+	document.querySelectorAll( 'a[href^="#"], a[href^="/#"], a[href^="/de/#"], a[href^="/en/#"]' ).forEach( ( anchor ) => {
 		anchor.addEventListener( 'click', function ( e ) {
 			const emifreeHref = this.getAttribute( 'href' );
 			if ( ! emifreeHref || emifreeHref === '#' ) {
@@ -345,12 +386,16 @@
 			if ( ! emifreeFragment.startsWith( '#' ) ) {
 				return;
 			}
-			// For absolute-path anchors, only smooth-scroll if we're
-			// already on the same page. If we are not, let the browser
-			// do a full navigation to the homepage + fragment.
+			// For absolute-path anchors (e.g. /de/#products, /#applications),
+			// only smooth-scroll if we're already on the same page. If we are
+			// not, let the browser do a full navigation to the path + fragment.
+			// The same-path check runs in SITE-RELATIVE space (subpath
+			// stripped) so it works on both root installs and subpath
+			// installs like /wordpress/.
 			if ( emifreeHref.startsWith( '/' ) ) {
-				const emifreePath = window.location.pathname.replace( /\/$/, '' );
-				const emifreeHrefPath = emifreeHref.split( '#' )[ 0 ].replace( /\/$/, '' ) || '/';
+				const emifreePath    = emifreeStripSubpath( window.location.pathname ).replace( /\/$/, '' );
+				let emifreeHrefPath  = emifreeHref.split( '#' )[ 0 ].replace( /\/$/, '' ) || '/';
+				emifreeHrefPath      = emifreeStripSubpath( emifreeHrefPath );
 				const emifreeSamePath = emifreePath === emifreeHrefPath;
 				if ( ! emifreeSamePath ) {
 					return;

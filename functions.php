@@ -152,6 +152,19 @@ function emifree_enqueue_assets() {
 		EMIFREE_THEME_VERSION,
 		true
 	);
+
+	// Subpath metadata — header.js needs to know where WordPress is
+	// installed so language-swap math and nav-link click handlers
+	// preserve the install subpath on subpath installs like
+	// /wordpress/. Mirrors inc/nav.php + inc/footer.php + emifree_get_lang()
+	// which all strip emifree_home_subpath() before doing prefix checks.
+	wp_localize_script(
+		'emifree-header',
+		'emifreeSite',
+		array(
+			'homeSubpath' => emifree_home_subpath(), // '' on root, '/wordpress' on /wordpress install
+		)
+	);
 }
 add_action( 'wp_enqueue_scripts', 'emifree_enqueue_assets' );
 
@@ -876,7 +889,25 @@ function emifree_handle_contact_submit() {
 	);
 
 	$emifree_headers = array( 'Reply-To: ' . $emifree_name . ' <' . $emifree_email . '>' );
-	$emifree_sent    = wp_mail( $emifree_recipient, $emifree_subject, $emifree_body, $emifree_headers );
+
+	// Capture PHPMailer exceptions so we can log the real SMTP failure
+	// (auth, TLS handshake, RCPT TO rejection, etc.) instead of just
+	// knowing wp_mail() returned false. phpmailer_init fires BEFORE
+	// wp_mail() sends, so we attach the exception handler there.
+	$emifree_phpmailer_error = null;
+	add_action( 'phpmailer_init', function ( $emifree_phpmailer ) use ( &$emifree_phpmailer_error ) {
+		$emifree_phpmailer_error = null;
+		$emifree_phpmailer->SMTPDebug   = 2; // client + server transcript
+		$emifree_phpmailer->Debugoutput = function ( $emifree_str, $emifree_level ) use ( &$emifree_phpmailer_error ) {
+			// Collect the full SMTP transcript; final line usually
+			// contains the rejection reason (535 auth, 553 envelope,
+			// certificate errors, etc.).
+			$emifree_phpmailer_error .= trim( (string) $emifree_str ) . "\n";
+			error_log( '[emifree-contact-smtp] ' . trim( (string) $emifree_str ) );
+		};
+	}, 1 );
+
+	$emifree_sent = wp_mail( $emifree_recipient, $emifree_subject, $emifree_body, $emifree_headers );
 
 	if ( defined( 'WP_DEBUG' ) && WP_DEBUG ) {
 		// Trace every submission in debug mode so admins can confirm the
@@ -903,6 +934,14 @@ function emifree_handle_contact_submit() {
 		// message so they can recover it. PII exposure is acceptable
 		// because only the site admin sees the PHP error log, and the
 		// alternative is losing genuine customer enquiries.
+		//
+		// If the phpmailer_init hook above captured an SMTP transcript
+		// (auth failure, TLS handshake, RCPT rejection), surface it
+		// here so the admin can see the actual server response, not
+		// just "wp_mail() returned false".
+		if ( null !== $emifree_phpmailer_error && '' !== $emifree_phpmailer_error ) {
+			error_log( '[emifree-contact] SMTP transcript at failure: ' . $emifree_phpmailer_error );
+		}
 		error_log( sprintf(
 			"[emifree-contact] wp_mail() failed — submission to %s discarded from SMTP. Body follows:\n%s",
 			$emifree_recipient,
