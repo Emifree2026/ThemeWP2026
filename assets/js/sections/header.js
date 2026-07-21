@@ -381,12 +381,14 @@
 			if ( ! emifreeHref || emifreeHref === '#' ) {
 				return;
 			}
-			// Strip leading slashes so we end up with just the fragment.
-			const emifreeFragment = emifreeHref.replace( /^\/+/, '' );
+			// Strip leading slashes AND any /en/ or /de/ prefix so we end
+			// up with just the fragment. /en/#applications → #applications,
+			// /de/#products → #products, /#contact → #contact.
+			let emifreeFragment = emifreeHref.replace( /^\/+/, '' ).replace( /^(en|de)\//, '' );
 			if ( ! emifreeFragment.startsWith( '#' ) ) {
 				return;
 			}
-			// For absolute-path anchors (e.g. /de/#products, /#applications),
+			// For absolute-path anchors (e.g. /de/#products, /en/#applications),
 			// only smooth-scroll if we're already on the same page. If we are
 			// not, let the browser do a full navigation to the path + fragment.
 			// The same-path check runs in SITE-RELATIVE space (subpath

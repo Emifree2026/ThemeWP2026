@@ -63,11 +63,15 @@ if ( ! function_exists( 'emifree_nav_items' ) ) :
 		}
 
 		return array(
-			array( 'label' => 'Applications', 'href' => home_url( '/#applications' ) ),
-			array( 'label' => 'Products',     'href' => home_url( '/#products' ) ),
-			array( 'label' => 'Knowledge',    'href' => home_url( '/#knowledge' ) ),
-			array( 'label' => 'Technology',   'href' => home_url( '/#technology' ) ),
-			array( 'label' => 'Contact',      'href' => home_url( '/#contact' ) ),
+			// /en/#anchor (not bare /#anchor) so the in-page link stays on
+			// /en/ — otherwise the click navigates to / which the
+			// emifree_maybe_redirect_home_to_de() handler 301s to /de/,
+			// silently flipping EN users to German mid-click.
+			array( 'label' => 'Applications', 'href' => home_url( '/en/#applications' ) ),
+			array( 'label' => 'Products',     'href' => home_url( '/en/#products' ) ),
+			array( 'label' => 'Knowledge',    'href' => home_url( '/en/#knowledge' ) ),
+			array( 'label' => 'Technology',   'href' => home_url( '/en/#technology' ) ),
+			array( 'label' => 'Contact',      'href' => home_url( '/en/#contact' ) ),
 		);
 	}
 endif;
