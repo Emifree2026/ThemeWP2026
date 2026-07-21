@@ -276,6 +276,7 @@ if ( ! function_exists( 'emifree_normalize_post_for_card' ) ) :
 				'category'       => (string) get_post_meta( $emifree_id, 'emifree_category', true ),
 				'date'           => mysql2date( 'Y-m-d', $emifree_source->post_date ),
 				'formatted_date' => mysql2date( get_option( 'date_format' ), $emifree_source->post_date ),
+				'modified_gmt'   => $emifree_source->post_modified_gmt,
 				'read_time'      => (string) get_post_meta( $emifree_id, 'emifree_read_time', true ),
 				'hero_image_url' => emifree_get_post_hero_image_url( $emifree_id ),
 			);

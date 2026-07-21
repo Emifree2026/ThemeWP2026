@@ -400,3 +400,39 @@ function emifree_register_blog_post_schema( $emifree_args ) {
 		1
 	);
 }
+
+/**
+ * Emit a site-wide <link rel="sitemap"> tag.
+ *
+ * Tells browsers + crawlers where to find the sitemap. Subpath-safe
+ * via home_url() with leading slash — root install gets
+ * https://emifree.com/sitemap.xml, subpath install gets
+ * https://emifree.com/wordpress/sitemap.xml.
+ *
+ * Hooked at wp_head priority 2, alongside the robots meta below and
+ * after the preconnect hints in inc/analytics.php (priority 1). No
+ * risk of duplication — the explore phase confirmed no other
+ * <link rel="sitemap"> emitter exists in the theme or any plugin.
+ */
+function emifree_sitemap_link_tag() {
+	echo '<link rel="sitemap" type="application/xml" href="' . esc_url( home_url( '/sitemap.xml' ) ) . '">' . "\n";
+}
+add_action( 'wp_head', 'emifree_sitemap_link_tag', 2 );
+
+/**
+ * Emit a site-wide <meta name="robots"> tag.
+ *
+ * max-snippet:-1         → Google may show any-length snippets for
+ *                           blog posts. Lets rich content surface.
+ * max-image-preview:large → large thumbnail in SERPs (vs. default
+ *                           small). High CTR for blog cards.
+ * max-video-preview:-1   → no video preview limit (no video today;
+ *                           if/when added, Google will respect this).
+ *
+ * index, follow is the default behavior so it's spelled out for
+ * clarity. No noindex anywhere — every public page should be indexed.
+ */
+function emifree_robots_meta_tags() {
+	echo '<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">' . "\n";
+}
+add_action( 'wp_head', 'emifree_robots_meta_tags', 2 );

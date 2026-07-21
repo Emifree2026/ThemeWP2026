@@ -48,6 +48,18 @@ require_once get_template_directory() . '/inc/analytics.php';
 // inside the page-blog-post*.php shims.
 require_once get_template_directory() . '/inc/cpt-blog.php';
 
+// SEO route surfaces — virtual /robots.txt + /sitemap.xml emitted by
+// the theme. Single source of truth (no physical files at the
+// document root), subpath-safe via home_url(). Each file owns its
+// rewrite rule + query var + template_redirect handler.
+require_once get_template_directory() . '/inc/robots.php';
+require_once get_template_directory() . '/inc/sitemap.php';
+
+// IndexNow — fires wp_remote_post to api.indexnow.org on every
+// blog_post save. Gated on EMIFREE_INDEXNOW_KEY + EMIFREE_INDEXNOW_HOST
+// being non-empty (defaults to empty in wp-config); no-op locally.
+require_once get_template_directory() . '/inc/indexnow.php';
+
 /**
  * Home subpath — the directory under which WordPress is installed
  * on this site, derived from home_url(). '' for a root install
@@ -264,6 +276,12 @@ function emifree_flush_section_rewrite_rules() {
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
 	emifree_register_blog_cpt();
+	if ( function_exists( 'emifree_register_robots_route' ) ) {
+		emifree_register_robots_route();
+	}
+	if ( function_exists( 'emifree_register_sitemap_route' ) ) {
+		emifree_register_sitemap_route();
+	}
 	flush_rewrite_rules( false );
 }
 add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
@@ -281,13 +299,19 @@ add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
  * unified flush from firing.
  */
 function emifree_maybe_flush_section_routes() {
-	if ( get_transient( 'emifree_section_routes_flushed_v7' ) ) {
+	if ( get_transient( 'emifree_section_routes_flushed_v8' ) ) {
 		return;
 	}
 	emifree_register_legal_routes();
 	emifree_register_blog_route();
 	emifree_register_homepage_lang_route();
 	emifree_register_blog_cpt();
+	if ( function_exists( 'emifree_register_robots_route' ) ) {
+		emifree_register_robots_route();
+	}
+	if ( function_exists( 'emifree_register_sitemap_route' ) ) {
+		emifree_register_sitemap_route();
+	}
 	// Hard flush (true) — the soft flush (false) only updates when rules
 	// changed, which can leave stale v4 rules in the DB if the v4 transient
 	// was set under a different code path. Hard flush is idempotent and
@@ -300,7 +324,8 @@ function emifree_maybe_flush_section_routes() {
 	delete_transient( 'emifree_section_routes_flushed_v4' );
 	delete_transient( 'emifree_section_routes_flushed_v5' );
 	delete_transient( 'emifree_section_routes_flushed_v6' );
-	set_transient( 'emifree_section_routes_flushed_v7', 1, DAY_IN_SECONDS );
+	delete_transient( 'emifree_section_routes_flushed_v7' );
+	set_transient( 'emifree_section_routes_flushed_v8', 1, DAY_IN_SECONDS );
 }
 add_action( 'init', 'emifree_maybe_flush_section_routes', 99 );
 
@@ -622,7 +647,7 @@ function emifree_enqueue_tawk_widget() {
 		: '1jsu0245o';
 	$emifree_tawk_property_id_de = defined( 'EMIFREE_TAWK_PROPERTY_ID_DE' ) && EMIFREE_TAWK_PROPERTY_ID_DE
 		? EMIFREE_TAWK_PROPERTY_ID_DE
-		: '1jtvdsd2i';
+		: '1ju1qnllp';
 
 	// emifree_get_lang() is path-aware (so a /de/visit with no cookie
 	// still serves the DE widget). That function lives further up in this
