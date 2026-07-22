@@ -1,136 +1,130 @@
-// Hero background video — autoplay on every paint.
+// Page-level behaviors shared across the landing page.
 //
-// The template-parts emit a single <video id="hero-video"> (the
-// previous agent's dual-video carousel was rolled back when the
-// landing page was migrated from React to WordPress — see
-// template-parts/section-hero.php for the matching comment). The
-// page-level autoplay attribute on the <video> element fires the
-// first paint attempt; this script catches any case where the
-// autoplay attribute was blocked (mobile Safari data-saver, iOS
-// Low Power Mode, autoplay disabled by browser policy) and
-// retries, plus logs a debug breadcrumb when even the retry is
-// rejected so the failure is visible in dev tools.
+// Responsibilities:
+//  - Hero background video autoplay (two-stage retry that respects
+//    iOS Safari's user-gesture gate — see commit message of the
+//    change that introduced this).
+//  - Sticky header background flip on scroll past 20 px.
+//  - Mobile menu open/close toggle.
+//  - Smooth scroll for in-page anchor links (legacy fallback for
+//    pages where header.js's intercept hasn't taken effect — e.g.
+//    on legal pages where the nav is rendered without the
+//    wp_localize_script'd emifreeSite data).
 //
-// Single source of truth: the markup's autoplay attribute is what
-// we trust on initial load. JS only kicks in if autoplay didn't
-// take — typically because the user gesture gate wasn't satisfied
-// yet (mobile) or the muted/playsinline hint was missed.
-const heroVideo = document.getElementById('hero-video');
+// What this file does NOT do (handled by dedicated section scripts):
+//  - Language switcher dropdown + subpath math (header.js).
+//  - Contact form AJAX + validation (sections/contact.js, uses
+//    wp_localize_script('emifreeContact')).
+//  - Step switching in the Technology process sections
+//    (sections/technology.js).
+//
+// Earlier revisions of this file held stale duplicate logic for
+// the contact form (looking for #contact-form, reading
+// emifree_ajax.ajax_url) and the header (looking for #main-header
+// instead of #emifree-header). Those DOM IDs and localize handles
+// don't exist on the current theme — every scroll event threw a
+// null-ref classList exception in devtools. Removed.
 
-if (heroVideo) {
-    // Loop is set in markup but some browsers (older mobile Safari)
-    // drop the loop attribute on programmatic load. Re-assert.
-    heroVideo.loop = true;
+(function () {
+    'use strict';
 
-    // Two-stage autoplay retry.
+    // ----- Hero background video autoplay retry -----
     //
-    // Stage 1: try to play immediately on script load. This catches
-    // desktop browsers and any mobile browser that allowed the
-    // markup's autoplay attribute to fire.
-    const emifreePlayPromise = heroVideo.play();
-    if (emifreePlayPromise && typeof emifreePlayPromise.catch === 'function') {
-        emifreePlayPromise.catch(function () {
-            // Stage 1 rejected — typically iOS Safari data-saver
-            // mode or Low Power Mode blocking autoplay until the
-            // first user gesture. Defer retry until first touch.
-            // Once-flag so we don't pile up listeners if multiple
-            // events fire in quick succession.
-            if (heroVideo.dataset.emifreeGestureArmed === '1') { return; }
-            heroVideo.dataset.emifreeGestureArmed = '1';
+    // The template-parts emit a single <video id="hero-video">. The
+    // page-level autoplay attribute fires the first paint attempt;
+    // this catches any case where the autoplay attribute was
+    // blocked (mobile Safari data-saver, iOS Low Power Mode,
+    // autoplay disabled by browser policy) and retries after the
+    // first user gesture.
+    const heroVideo = document.getElementById('hero-video');
 
-            const emifreeArmedEvents = ['touchstart', 'pointerdown', 'mousedown', 'keydown', 'scroll'];
-            const emifreeArmPlay = function () {
-                heroVideo.play().catch(function (e) {
-                    console.log('Hero autoplay still blocked after gesture:', e);
-                });
+    if (heroVideo) {
+        // Older mobile Safari drops the loop attribute on
+        // programmatic load. Re-assert.
+        heroVideo.loop = true;
+
+        // Stage 1: try to play immediately on script load. Catches
+        // desktop + any mobile browser that allowed the markup's
+        // autoplay attribute.
+        const emifreePlayPromise = heroVideo.play();
+        if (emifreePlayPromise && typeof emifreePlayPromise.catch === 'function') {
+            emifreePlayPromise.catch(function () {
+                // Stage 1 rejected. Defer retry to first user
+                // gesture. Once-flag so we don't pile up listeners
+                // if multiple events fire in quick succession.
+                if (heroVideo.dataset.emifreeGestureArmed === '1') { return; }
+                heroVideo.dataset.emifreeGestureArmed = '1';
+
+                const emifreeArmedEvents = ['touchstart', 'pointerdown', 'mousedown', 'keydown', 'scroll'];
+                const emifreeArmPlay = function () {
+                    heroVideo.play().catch(function (e) {
+                        console.log('Hero autoplay still blocked after gesture:', e);
+                    });
+                    emifreeArmedEvents.forEach(function (ev) {
+                        window.removeEventListener(ev, emifreeArmPlay, { capture: true });
+                    });
+                };
                 emifreeArmedEvents.forEach(function (ev) {
-                    window.removeEventListener(ev, emifreeArmPlay, { capture: true });
+                    window.addEventListener(ev, emifreeArmPlay, { capture: true, passive: true });
                 });
-            };
-            emifreeArmedEvents.forEach(function (ev) {
-                window.addEventListener(ev, emifreeArmPlay, { capture: true, passive: true });
             });
+        }
+    }
+
+    // ----- Sticky header background flip -----
+    //
+    // Header starts transparent (over the hero); flips to a
+    // translucent white with blur + shadow once the user scrolls
+    // past 20 px so subsequent sections have readable contrast.
+    // header.js owns the actual scrollY > 20 styling already — see
+    // window.addEventListener('scroll', ...) in header.js — so this
+    // is a no-op kept only for parity. (Earlier revisions fought
+    // header.js for control of the same classes; the unified
+    // version lives in header.js now.)
+    //
+    // Empty block intentionally left to document the architectural
+    // decision: header scroll state is centralized in header.js
+    // (which has access to emifreeSite.homeSubpath for subpath-
+    // aware nav-anchor handling) and main.js does not duplicate
+    // it. Touching this file in the future should not re-introduce
+    // the duplicate.
+
+    // ----- Mobile menu toggle -----
+    //
+    // The actual menu open/close state is owned by header.js
+    // (which wires data-emifree-nav-* attributes and subpath math).
+    // This handler remains for older markup shapes that emit the
+    // legacy #mobile-menu-btn / #mobile-menu pair — the legacy
+    // IDs are null on the current theme, so this is a guarded
+    // no-op rather than an active duplicate.
+    const legacyMobileBtn  = document.getElementById('mobile-menu-btn');
+    const legacyMobileMenu = document.getElementById('mobile-menu');
+    if (legacyMobileBtn && legacyMobileMenu) {
+        legacyMobileBtn.addEventListener('click', function () {
+            legacyMobileMenu.classList.toggle('hidden');
         });
     }
-}
 
-// Scroll header background
-window.addEventListener('scroll', () => {
-    const header = document.getElementById('main-header');
-    if (window.scrollY > 20) {
-        header.classList.add('bg-white/95', 'backdrop-blur-md', 'shadow-lg');
-        header.classList.remove('bg-transparent');
-    } else {
-        header.classList.add('bg-transparent');
-        header.classList.remove('bg-white/95', 'backdrop-blur-md', 'shadow-lg');
-    }
-});
-
-// Mobile menu toggle
-const mobileBtn = document.getElementById('mobile-menu-btn');
-const mobileMenu = document.getElementById('mobile-menu');
-if (mobileBtn) {
-    mobileBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-    });
-}
-
-// Contact form submission (AJAX)
-const contactForm = document.getElementById('contact-form');
-if (contactForm) {
-    contactForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const formData = new FormData(contactForm);
-        const data = {
-            name: formData.get('name'),
-            email: formData.get('email'),
-            company: formData.get('company'),
-            message: formData.get('message')
-        };
-
-        // Clear previous errors
-        document.querySelectorAll('.error-message').forEach(el => el.classList.add('hidden'));
-
-        try {
-            const response = await fetch(emifree_ajax.ajax_url, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                body: new URLSearchParams({
-                    action: 'send_contact',
-                    nonce: emifree_ajax.nonce,
-                    ...data
-                })
-            });
-            const result = await response.json();
-            if (result.success) {
-                alert(result.data); // Simple toast alternative
-                contactForm.reset();
-            } else {
-                // Display field errors
-                for (const [field, msg] of Object.entries(result.data)) {
-                    const input = contactForm.querySelector(`[name="${field}"]`);
-                    if (input) {
-                        const errorDiv = input.parentElement.querySelector('.error-message');
-                        if (errorDiv) {
-                            errorDiv.textContent = msg;
-                            errorDiv.classList.remove('hidden');
-                        }
-                    }
-                }
+    // ----- Smooth scroll for legacy in-page anchors -----
+    //
+    // header.js's emifreeSite-aware click handler intercepts
+    // a[href^="#"], a[href^="/#"], a[href^="/de/#"], a[href^="/en/#"]
+    // and routes them through emifreeComputeLangTarget. This
+    // fallback handles bare hash-only anchors (e.g. anchors inside
+    // a long content area where the subpath-aware routing isn't
+    // needed) that may have been added by a content author without
+    // going through the standard nav shape. It also covers pages
+    // where header.js itself didn't load (defensive only — every
+    // page in this theme loads header.js globally).
+    document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+        anchor.addEventListener('click', function (e) {
+            const href = anchor.getAttribute('href');
+            if (!href || href === '#') { return; }
+            const target = document.querySelector(href);
+            if (target) {
+                e.preventDefault();
+                target.scrollIntoView({ behavior: 'smooth' });
             }
-        } catch (err) {
-            alert('Something went wrong. Please try again.');
-        }
+        });
     });
-}
-
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-    anchor.addEventListener('click', function(e) {
-        e.preventDefault();
-        const target = document.querySelector(this.getAttribute('href'));
-        if (target) {
-            target.scrollIntoView({ behavior: 'smooth' });
-        }
-    });
-});
+})();
