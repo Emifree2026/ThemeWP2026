@@ -600,6 +600,29 @@ function emifree_enqueue_section_script( $emifree_section_slug ) {
 			true
 		);
 	}
+
+	// Product-section prefill template — only emitted when the
+	// products section is actually being loaded, so other section
+	// scripts don't carry unused localize data. The {product}
+	// placeholder is substituted with the human label from
+	// data-emifree-inquiry-label at CTA-click time in products.js.
+	//
+	// Both EN + DE strings live here (rather than a translated
+	// .mo file) because the template is short and tightly coupled
+	// to this section — keeping it inline avoids a separate
+	// gettext load and a translation context.
+	if ( 'products' === $emifree_section_slug && function_exists( 'emifree_get_lang' ) ) {
+		$emifree_prefill_en = "I would like a quote for {product}.\n\n";
+		$emifree_prefill_de = "Ich möchte ein Angebot für {product} anfordern.\n\n";
+		$emifree_prefill    = 'de' === emifree_get_lang() ? $emifree_prefill_de : $emifree_prefill_en;
+		wp_localize_script(
+			$emifree_section_handle,
+			'emifreeProducts',
+			array(
+				'prefillPrefix' => $emifree_prefill,
+			)
+		);
+	}
 }
 
 /**
@@ -853,6 +876,27 @@ function emifree_handle_contact_submit() {
 	$emifree_company = isset( $_POST['company'] ) ? sanitize_text_field( wp_unslash( $_POST['company'] ) )         : '';
 	$emifree_message = isset( $_POST['message'] ) ? sanitize_textarea_field( wp_unslash( $_POST['message'] ) )     : '';
 
+	// Product-of-interest tag — populated by contact.js when the
+	// visitor clicks a product-section "Request Quote" CTA. The slug
+	// is whitelisted against the three known product keys; anything
+	// else is dropped (defensive: a malicious client could send
+	// anything). The label comes from the same data-emifree-inquiry-
+	// label attribute the client read, sanitized + control-char-
+	// stripped + length-capped before being embedded into the email
+	// subject + body (where it ends up inside SMTP envelope).
+	$emifree_product_slug  = isset( $_POST['product'] )       ? sanitize_text_field( wp_unslash( $_POST['product'] ) )       : '';
+	$emifree_product_label = isset( $_POST['product_label'] ) ? sanitize_text_field( wp_unslash( $_POST['product_label'] ) ) : '';
+	$emifree_allowed_products = array( 'mechanical', 'electrostatic', 'dust' );
+	if ( ! in_array( $emifree_product_slug, $emifree_allowed_products, true ) ) {
+		$emifree_product_slug = '';
+	}
+	// Strip control characters before embedding in email headers.
+	$emifree_product_label = preg_replace( '/[\x00-\x1F\x7F]/', '', $emifree_product_label );
+	if ( strlen( $emifree_product_label ) > 60 ) {
+		$emifree_product_label = substr( $emifree_product_label, 0, 60 );
+	}
+	$emifree_has_product = '' !== $emifree_product_slug && '' !== $emifree_product_label;
+
 	// Server-side re-validation — never trust the client.
 	$emifree_errors = array();
 	if ( strlen( $emifree_name ) < 2 ) {
@@ -879,13 +923,26 @@ function emifree_handle_contact_submit() {
 
 	require_once get_template_directory() . '/inc/contact.php';
 	$emifree_recipient = emifree_contact_recipient_email();
+	// Subject prefix is the site name; the optional [Product] tag is
+	// inserted between the prefix and the rest when the visitor
+	// arrived via a product-section CTA. Inbox-filterable as
+	// "[Emifree] [Mechanical Filtration]" so triage is a one-click
+	// mailbox search.
 	$emifree_subject   = sprintf(
-		'[%s] New contact form submission from %s',
+		'[%s]%s New contact form submission from %s',
 		wp_specialchars_decode( get_bloginfo( 'name' ), ENT_QUOTES ),
+		$emifree_has_product ? ' [' . $emifree_product_label . ']' : '',
 		$emifree_name
 	);
 
-	$emifree_body  = sprintf(
+	// Body: when the product tag is set, prepend a "Product of
+	// interest: X" line so the recipient sees the product name even
+	// if their mail client collapses/truncates the subject line.
+	$emifree_body  = '';
+	if ( $emifree_has_product ) {
+		$emifree_body .= sprintf( "Product of interest: %s\n", $emifree_product_label );
+	}
+	$emifree_body .= sprintf(
 		"Name:    %s\nEmail:   %s\nCompany: %s\n\nMessage:\n%s\n",
 		$emifree_name,
 		$emifree_email,

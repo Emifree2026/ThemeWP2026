@@ -92,6 +92,19 @@ $emifree_contact_info   = emifree_contact_info();
 						style="position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden;"
 					>
 
+					<?php /*
+					 * Product-of-interest tag — populated by contact.js when
+					 * the visitor clicks a product-section "Request Quote"
+					 * CTA. The slug (e.g. "mechanical") is whitelisted
+					 * server-side in emifree_handle_contact_submit(); the
+					 * label (e.g. "Mechanical Filtration") is human input
+					 * from the same data-emifree-inquiry-label attribute,
+					 * sanitized + length-capped before embedding in the
+					 * email subject line.
+					 */ ?>
+					<input type="hidden" name="product" value="">
+					<input type="hidden" name="product_label" value="">
+
 					<?php /* Name */ ?>
 					<div>
 						<label for="emifree-contact-name" class="sr-only">Name</label>

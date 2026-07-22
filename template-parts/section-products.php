@@ -157,10 +157,18 @@ emifree_enqueue_section_script( 'products' );
 							<?php endforeach; ?>
 						</div>
 
-						<!-- Inquiry CTA — opens the inquiry modal (Piece 10) -->
+						<!-- Inquiry CTA — opens the inquiry modal (Piece 10).
+						     data-emifree-inquiry-label carries the human-readable
+						     product name into products.js so the contact form can
+						     be pre-filled with a sentence like
+						     "I would like a quote for Mechanical Filtration.\n\n"
+						     when this button is clicked. The label travels
+						     client→server via hidden inputs so the recipient
+						     email's subject line can include the product name. -->
 						<button
 							type="button"
 							data-emifree-inquiry="<?php echo esc_attr( $emifree_key ); ?>"
+							data-emifree-inquiry-label="<?php echo esc_attr( $emifree_product['name'] ); ?>"
 							class="emifree-open-inquiry w-full text-white px-8 py-4 rounded-full font-semibold text-lg hover:shadow-xl transition-all duration-300 flex items-center justify-center gap-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
 							style="background: linear-gradient(90deg, #1d4ed8 0%, #06b6d4 100%); box-shadow: 0 10px 25px rgba(6, 182, 212, 0.25);"
 						>

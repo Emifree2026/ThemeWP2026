@@ -148,10 +148,36 @@
 	document.querySelectorAll( '[data-emifree-inquiry]' ).forEach( ( emifreeCta ) => {
 		emifreeCta.addEventListener( 'click', () => {
 			const emifreeProductType = emifreeCta.getAttribute( 'data-emifree-inquiry' );
+			const emifreeLabel = emifreeCta.getAttribute( 'data-emifree-inquiry-label' ) || '';
 			const emifreeEvent = new CustomEvent( 'emifree:open-inquiry', {
 				detail: { productType: emifreeProductType },
 			} );
 			window.dispatchEvent( emifreeEvent );
+
+			// Also dispatch emifree:prefill-contact so contact.js can
+			// populate the message field and two hidden inputs
+			// (product slug + label) for the recipient email. The
+			// prefix template ships via wp_localize_script as
+			// window.emifreeProducts.prefillPrefix and contains a
+			// {product} placeholder; we substitute the human label
+			// from data-emifree-inquiry-label.
+			//
+			// Decoupling via a CustomEvent keeps products.js ignorant
+			// of contact form DOM. No-op when the CTA lacks a label
+			// attribute (defensive — keeps the handler safe if a future
+			// template forgets to emit it).
+			if ( emifreeLabel ) {
+				const emifreeTemplate = ( window.emifreeProducts && window.emifreeProducts.prefillPrefix )
+					|| '{product}\n\n';
+				const emifreePrefill = new CustomEvent( 'emifree:prefill-contact', {
+					detail: {
+						slug: emifreeProductType,
+						label: emifreeLabel,
+						message: emifreeTemplate.replace( '{product}', emifreeLabel ),
+					},
+				} );
+				window.dispatchEvent( emifreePrefill );
+			}
 
 			// Fallback: scroll to #contact. The modal handler (Piece 10)
 			// will call preventDefault() on the event to swallow this.

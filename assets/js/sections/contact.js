@@ -54,9 +54,77 @@
     // reset(), so no re-empty action is needed.
     const emifreeTsInput = emifreeForm.querySelector('input[name="emifree_ts"]');
     const emifreeHoneypot = emifreeForm.querySelector('input[name="website_url"]');
+    // Hidden product-of-interest inputs — populated by the
+    // emifree:prefill-contact listener below when a product-section
+    // "Request Quote" CTA is clicked. The server-side handler
+    // (functions.php emifree_handle_contact_submit) whitelists the
+    // slug and uses the label to build the email subject + body.
+    const emifreeProductInput = emifreeForm.querySelector('input[name="product"]');
+    const emifreeProductLabelInput = emifreeForm.querySelector('input[name="product_label"]');
+    const emifreeMessageInput = emifreeForm.querySelector('[data-emifree-contact-field="message"]');
     if (emifreeTsInput) {
         emifreeTsInput.value = String(Math.floor(Date.now() / 1000));
     }
+
+    // ----- emifree:prefill-contact listener -----
+    //
+    // products.js dispatches this event with detail = { slug, label, message }.
+    // We populate the two hidden inputs (for the email subject + body
+    // line in the recipient inbox) and inject a "I would like a quote
+    // for X.\n\n" line into the message textarea so the visitor sees
+    // confirmation of which product they selected and can edit the
+    // draft before submitting.
+    //
+    // Switching products mid-flow: we stamp the inserted prefix's
+    // length on the textarea itself (data-emifree-prefill-length) so
+    // a subsequent CTA click can replace JUST the auto-fill portion
+    // without clobbering any draft the user typed after it. Clicking
+    // the SAME product CTA again is a no-op (the existing prefix is
+    // untouched). If the user manually edits the auto-fill portion,
+    // we still replace exactly the original character range — they
+    // can edit AFTER the stamped boundary freely.
+    //
+    // Cursor lands at the end of the inserted prefix so the user
+    // starts typing right after the auto-fill. On replacement, the
+    // cursor lands at the same boundary position.
+    window.addEventListener('emifree:prefill-contact', function (e) {
+        const emifreeDetail = (e && e.detail) || {};
+        const emifreeSlug = emifreeDetail.slug || '';
+        const emifreeLabel = emifreeDetail.label || '';
+        const emifreePrefix = emifreeDetail.message || '';
+        if (emifreeProductInput && emifreeSlug) {
+            emifreeProductInput.value = emifreeSlug;
+        }
+        if (emifreeProductLabelInput && emifreeLabel) {
+            emifreeProductLabelInput.value = emifreeLabel;
+        }
+        if (!emifreeMessageInput || !emifreePrefix) {
+            return;
+        }
+        const emifreeCurrent = emifreeMessageInput.value || '';
+        const emifreePrevLen = parseInt(emifreeMessageInput.getAttribute('data-emifree-prefill-length') || '0', 10);
+        const emifreePrevSlug = emifreeMessageInput.getAttribute('data-emifree-prefill-slug') || '';
+        if (emifreePrevLen > 0 && emifreePrevSlug === emifreeSlug) {
+            // Same product, same prefix — leave the user's textarea
+            // alone (they may have edited it). No-op.
+            return;
+        }
+        // Strip the previous auto-fill (if any) and prepend the new
+        // one. Any text the user typed AFTER the previous auto-fill
+        // boundary is preserved as-is.
+        const emifreeTail = emifreePrevLen > 0 ? emifreeCurrent.substring(emifreePrevLen) : emifreeCurrent;
+        emifreeMessageInput.value = emifreePrefix + emifreeTail;
+        emifreeMessageInput.setAttribute('data-emifree-prefill-length', String(emifreePrefix.length));
+        emifreeMessageInput.setAttribute('data-emifree-prefill-slug', emifreeSlug);
+        emifreeMessageInput.focus();
+        try {
+            emifreeMessageInput.setSelectionRange(emifreePrefix.length, emifreePrefix.length);
+        } catch (_) {
+            // Some browsers (older Safari on certain input types) throw
+            // when selection range is set on textarea — silently skip
+            // the cursor placement rather than aborting the whole flow.
+        }
+    });
 
     // ----- Validation rules (mirror React's Zod schema) -----
     const emifreeValidators = {
