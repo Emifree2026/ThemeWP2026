@@ -98,7 +98,7 @@ require_once get_template_directory() . '/inc/nav.php';
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 12h20"></path>
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path>
 						</svg>
-						<span id="emifree-lang-label" class="text-sm font-medium text-zinc-700">DE</span>
+						<span id="emifree-lang-label" class="text-sm font-medium text-zinc-700"><?php echo esc_html( strtoupper( emifree_get_lang() ) ); ?></span>
 						<svg class="w-4 h-4 text-zinc-500 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
 							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
 						</svg>
