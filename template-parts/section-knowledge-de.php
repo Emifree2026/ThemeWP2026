@@ -43,7 +43,7 @@ $emifree_blog_posts = array(
 		'read_time'     => '5 Min. Lesezeit',
 		'author'        => 'Victoria Pedroza',
 		'author_role'   => 'Produktmanagerin, Emifree GmbH',
-		'hero_image'    => 'Factory_floor_with_CNC_.webp',
+		'hero_image'    => 'Workers_operating_CNC_machines.jpeg',
 		'body_preview'  => 'In der modernen Präzisionsfertigung ist die Luftqualität in der Fabrikhalle längst kein Nebenthema mehr. Die Luft in einer Werkstatt beeinflusst direkt die Zuverlässigkeit der Anlagen, die Einhaltung gesetzlicher Vorschriften und – am wichtigsten – die Gesundheit der Mitarbeiter. Ein industrieller Ölnebelabscheider, der an jeder Werkzeugmaschine positioniert ist, stellt eine strategische Investition dar, kein Zubehör.',
 	),
 	'precision-in-every-breath' => array(

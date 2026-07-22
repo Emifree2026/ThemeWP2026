@@ -62,7 +62,7 @@ if ( ! function_exists( 'emifree_blog_posts' ) ) :
 				'read_time'     => '5 min read',
 				'author'        => 'Victoria Pedroza',
 				'author_role'   => 'Product Manager, Emifree GmbH',
-				'hero_image'    => 'Factory_floor_with_CNC_.webp',
+				'hero_image'    => 'Workers_operating_CNC_machines.jpeg',
 				'body_preview'  => 'In modern precision manufacturing, factory air quality is no longer a peripheral concern. The air inside a workshop directly influences equipment reliability, regulatory compliance, and — most critically — workforce health. An industrial oil mist collector positioned at each machine tool is a strategic investment, not an accessory.',
 			),
 			'precision-in-every-breath' => array(
@@ -491,7 +491,7 @@ if ( ! function_exists( 'emifree_blog_posts_de' ) ) :
 				'read_time'      => '5 Min. Lesezeit',
 				'author'         => 'Victoria Pedroza',
 				'author_role'    => 'Produktmanagerin, Emifree GmbH',
-				'hero_image'     => 'Factory_floor_with_CNC_.webp',
+				'hero_image'     => 'Workers_operating_CNC_machines.jpeg',
 			),
 			'precision-in-every-breath' => array(
 				'id'             => '2',

@@ -44,7 +44,7 @@ $emifree_de_posts = array(
 		'read_time'     => '5 Min. Lesezeit',
 		'author'        => 'Victoria Pedroza',
 		'author_role'   => 'Produktmanagerin, Emifree GmbH',
-		'hero_image'    => 'Factory_floor_with_CNC_.webp',
+		'hero_image'    => 'Workers_operating_CNC_machines.jpeg',
 	),
 	'precision-in-every-breath' => array(
 		'id'            => '2',
