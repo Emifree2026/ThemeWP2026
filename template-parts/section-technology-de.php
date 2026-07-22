@@ -36,6 +36,12 @@ $emifree_technologies = array(
 		),
 		'process_title'   => 'So funktioniert ECO AIR',
 		'process_subtitle'=> 'Mechanische Abscheidung + Koaleszenz',
+		// initial_step picks which image is visible on first paint.
+		// Step order stays logical (capture → separate → clean); the
+		// carousel leads with the differentiation moment.
+		// Self-Cleaning & Recycling. See inc/technology.php for the
+		// English-side comment.
+		'initial_step'    => 2,
 		'steps'           => array(
 			array(
 				'title' => 'Vorfiltration',
@@ -155,11 +161,14 @@ $emifree_technologies = array(
 
 		<?php /* ----- Block 3: How It Works ----- */ ?>
 		<div class="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-20">
-			<?php foreach ( $emifree_technologies as $emifree_t_key => $emifree_t ) : ?>
+			<?php foreach ( $emifree_technologies as $emifree_t_key => $emifree_t ) :
+				$emifree_initial = isset( $emifree_t['initial_step'] ) ? (int) $emifree_t['initial_step'] : 0;
+				?>
 				<section
 					id="<?php echo esc_attr( $emifree_t['anchor_id'] ); ?>"
 					data-emifree-process="<?php echo esc_attr( $emifree_t_key ); ?>"
-					data-active-step="0"
+					data-active-step="<?php echo esc_attr( $emifree_initial ); ?>"
+					data-emifree-initial-step="<?php echo esc_attr( $emifree_initial ); ?>"
 					class="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 md:p-8 scroll-mt-20"
 				>
 					<h3 class="text-2xl font-bold text-slate-900">
@@ -176,7 +185,7 @@ $emifree_technologies = array(
 								type="button"
 								data-emifree-step="<?php echo esc_attr( $emifree_step_index ); ?>"
 								data-emifree-step-variant="desktop"
-								class="emifree-step-btn-desktop text-left px-4 py-3 rounded-xl transition-all <?php echo 0 === $emifree_step_index ? 'bg-blue-50 font-semibold text-blue-800' : 'hover:bg-slate-50 text-slate-600'; ?> focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+								class="emifree-step-btn-desktop text-left px-4 py-3 rounded-xl transition-all <?php echo $emifree_initial === $emifree_step_index ? 'bg-blue-50 font-semibold text-blue-800' : 'hover:bg-slate-50 text-slate-600'; ?> focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
 							>
 								<span class="text-sm font-medium"><?php echo esc_html( $emifree_step['title'] ); ?></span>
 							</button>
@@ -190,7 +199,7 @@ $emifree_technologies = array(
 								type="button"
 								data-emifree-step="<?php echo esc_attr( $emifree_step_index ); ?>"
 								data-emifree-step-variant="mobile"
-								class="emifree-step-btn-mobile px-4 py-2 rounded-full text-sm transition flex-shrink-0 <?php echo 0 === $emifree_step_index ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'; ?> focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+								class="emifree-step-btn-mobile px-4 py-2 rounded-full text-sm transition flex-shrink-0 <?php echo $emifree_initial === $emifree_step_index ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700 hover:bg-slate-200'; ?> focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
 							>
 								<?php echo esc_html( $emifree_step['title'] ); ?>
 							</button>
@@ -203,7 +212,7 @@ $emifree_technologies = array(
 								src="<?php echo esc_url( $emifree_tech_uri . $emifree_step['image'] ); ?>"
 								alt="<?php echo esc_attr( $emifree_step['title'] ); ?>"
 								data-emifree-image="<?php echo esc_attr( $emifree_step_index ); ?>"
-								class="max-w-full max-h-full w-auto h-auto object-contain <?php echo 0 === $emifree_step_index ? '' : 'hidden'; ?>"
+								class="max-w-full max-h-full w-auto h-auto object-contain <?php echo $emifree_initial === $emifree_step_index ? '' : 'hidden'; ?>"
 								loading="lazy"
 								decoding="async"
 							>
@@ -212,7 +221,7 @@ $emifree_technologies = array(
 
 					<div class="mt-4">
 						<?php $emifree_step_index = 0; foreach ( $emifree_t['steps'] as $emifree_step ) : ?>
-							<div data-emifree-step-caption="<?php echo esc_attr( $emifree_step_index ); ?>" class="<?php echo 0 === $emifree_step_index ? '' : 'hidden'; ?>">
+							<div data-emifree-step-caption="<?php echo esc_attr( $emifree_step_index ); ?>" class="<?php echo $emifree_initial === $emifree_step_index ? '' : 'hidden'; ?>">
 								<h4 class="text-lg font-semibold text-slate-900"><?php echo esc_html( $emifree_step['title'] ); ?></h4>
 								<p class="text-slate-600 mt-1"><?php echo esc_html( $emifree_step['desc'] ); ?></p>
 							</div>

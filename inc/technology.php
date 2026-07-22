@@ -44,6 +44,12 @@ if ( ! function_exists( 'emifree_technologies' ) ) :
 				),
 				'process_title'   => 'How ECO AIR Works',
 				'process_subtitle'=> 'Mechanical separation + coalescence',
+				// initial_step picks which image is visible on first paint
+				// (logical step order stays capture->separate->clean; the
+				// carousel leads with the differentiation moment
+				// Self-Cleaning & Recycling so landing on the section
+				// immediately surfaces the unique selling point).
+				'initial_step'    => 2,
 				'steps'           => array(
 					array(
 						'title' => 'Pre-Filtration',
