@@ -25,7 +25,7 @@
 			playsinline
 			webkit-playsinline
 			preload="metadata"
-			poster="<?php echo esc_url( get_template_directory_uri() . '/assets/images/emilogo.png' ); ?>"
+			poster="<?php echo esc_url( get_template_directory_uri() . '/assets/emilogo.png' ); ?>"
 			class="absolute inset-0 w-full h-full object-cover hero-fade-in"
 		>
 			<source src="<?php echo esc_url( get_template_directory_uri() . '/assets/videos/Landing Video_2.1.mp4' ); ?>" type="video/mp4">
