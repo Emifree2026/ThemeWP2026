@@ -157,6 +157,24 @@
 	// Persisted language key in localStorage
 	const EMIFREE_LANG_KEY = 'emifree_lang';
 
+	// Detect the current page's URI language in SITE-RELATIVE space
+	// (subpath stripped). Returns 'en', 'de', or '' if neither prefix
+	// is present (e.g. /impressum/, /privacy/, /terms/).
+	//
+	// The server-side emifree_get_lang() uses the same URI-first
+	// resolution; keeping the JS in sync means the chip stays
+	// consistent with the page content the server actually rendered.
+	function emifreeDetectUriLang() {
+		const emifreePath = emifreeStripSubpath( window.location.pathname );
+		if ( emifreePath.startsWith( '/de' ) ) {
+			return 'de';
+		}
+		if ( emifreePath.startsWith( '/en' ) ) {
+			return 'en';
+		}
+		return '';
+	}
+
 	function emifreeApplyStoredLang() {
 		try {
 			let stored = localStorage.getItem( EMIFREE_LANG_KEY );
@@ -172,14 +190,34 @@
 			if ( stored ) {
 				// Normalize code to upper-case label used in UI (EN/DE)
 				const code = String( stored ).toUpperCase();
+				const codeLower = String( stored ).toLowerCase();
+
+				// Resolve which language the chip should display. The URI
+				// is the source of truth for what's on the page: if the
+				// user just clicked the logo and landed on /en/, the
+				// server rendered the English page and the chip must
+				// match. Only fall back to the stored value when the
+				// URI is language-agnostic (e.g. /impressum/) — there,
+				// the user's stored preference is the only signal we
+				// have for which language they were last viewing.
+				const emifreeUriLang = emifreeDetectUriLang();
+				const emifreeChipCode = emifreeUriLang
+					? emifreeUriLang.toUpperCase()
+					: code;
+
 				if ( emifreeLangLabel ) {
-					emifreeLangLabel.textContent = code;
+					emifreeLangLabel.textContent = emifreeChipCode;
 				}
-				// Update footer links and mobile pills
+				// Update footer links and mobile pills using the stored
+				// preference (so legal-page language follows the user's
+				// last-chosen language even if they navigated from the
+				// other-locale homepage via the logo). The chip and the
+				// mobile pill active styling agree on URI-anchored pages;
+				// on language-agnostic pages they follow the stored pick.
 				emifreeUpdateFooterLegalLinks( code );
 				document.querySelectorAll( '.emifree-mobile-lang' ).forEach( ( pill ) => {
 					const pillCode = pill.getAttribute( 'data-emifree-mobile-lang' );
-					const isActive = pillCode && pillCode.toLowerCase() === String( stored ).toLowerCase();
+					const isActive = pillCode && pillCode.toLowerCase() === codeLower;
 					pill.classList.toggle( 'bg-blue-700', isActive );
 					pill.classList.toggle( 'text-white', isActive );
 					pill.classList.toggle( 'bg-slate-100', ! isActive );
@@ -351,14 +389,25 @@
 		} );
 	}
 
-	// ---- Hero CTA — scrolls to #technology with header offset ----
+	// ---- Hero CTA — scrolls to the ECO AIR Process card with header offset ----
+	// Targets the first Process section (#technology-eco-air) rather than
+	// the outer #technology wrapper, so the user lands directly on the
+	// step-by-step cards (How ECO AIR Works / How EARIA Works) instead
+	// of the selector cards above them. Both Process sections live side
+	// by side on desktop and stack on mobile, so landing at the first
+	// one reveals the full "How it works" UI immediately.
 	const emifreeHeroCta = document.getElementById( 'emifree-hero-cta' );
 	if ( emifreeHeroCta ) {
 		emifreeHeroCta.addEventListener( 'click', () => {
-			const emifreeTech = document.getElementById( 'technology' );
-			if ( emifreeTech ) {
+			// Prefer the explicit ECO AIR anchor if it exists (the
+			// canonical "how it works" Process target on landing pages).
+			// Fall back to the outer #technology wrapper on pages where
+			// the Process sections aren't rendered (e.g. legal pages).
+			const emifreeHeroTarget = document.getElementById( 'technology-eco-air' )
+				|| document.getElementById( 'technology' );
+			if ( emifreeHeroTarget ) {
 				const emifreeOffset = ( emifreeHeader ? emifreeHeader.offsetHeight : 64 ) + 8;
-				const emifreeTop = emifreeTech.getBoundingClientRect().top + window.pageYOffset - emifreeOffset;
+				const emifreeTop = emifreeHeroTarget.getBoundingClientRect().top + window.pageYOffset - emifreeOffset;
 				window.scrollTo( { top: emifreeTop, behavior: 'smooth' } );
 			}
 		} );
