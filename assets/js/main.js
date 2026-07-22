@@ -105,26 +105,22 @@
         });
     }
 
-    // ----- Smooth scroll for legacy in-page anchors -----
+    // ----- Smooth scroll for in-page anchors -----
     //
-    // header.js's emifreeSite-aware click handler intercepts
-    // a[href^="#"], a[href^="/#"], a[href^="/de/#"], a[href^="/en/#"]
-    // and routes them through emifreeComputeLangTarget. This
-    // fallback handles bare hash-only anchors (e.g. anchors inside
-    // a long content area where the subpath-aware routing isn't
-    // needed) that may have been added by a content author without
-    // going through the standard nav shape. It also covers pages
-    // where header.js itself didn't load (defensive only — every
-    // page in this theme loads header.js globally).
-    document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
-        anchor.addEventListener('click', function (e) {
-            const href = anchor.getAttribute('href');
-            if (!href || href === '#') { return; }
-            const target = document.querySelector(href);
-            if (target) {
-                e.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth' });
-            }
-        });
-    });
+    // header.js owns the click handler for every shape the theme
+    // emits (#anchor, /#anchor, /de/#anchor, /en/#anchor). Earlier
+    // revisions of this file held a duplicate a[href^="#"] handler
+    // that ran alongside header.js's handler on every nav click,
+    // forcing layout twice (once via document.querySelector +
+    // scrollIntoView here, once via getBoundingClientRect() +
+    // scrollTo() in header.js) and inflating Interaction to Next
+    // Paint to ~240 ms. Removed — header.js is the single source of
+    // truth for smooth-scroll behavior, and adding a second handler
+    // for "bare hash" anchors is not needed because every navigation
+    // anchor in this theme uses one of the four shapes header.js
+    // already covers.
+    //
+    // If a future content author needs a bare-fragment anchor that
+    // header.js doesn't handle, add the selector to header.js's
+    // querySelectorAll call rather than resurrecting this block.
 })();
