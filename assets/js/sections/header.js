@@ -389,29 +389,18 @@
 		} );
 	}
 
-	// ---- Hero CTA — scrolls to the ECO AIR Process card with header offset ----
-	// Targets the first Process section (#technology-eco-air) rather than
-	// the outer #technology wrapper, so the user lands directly on the
-	// step-by-step cards (How ECO AIR Works / How EARIA Works) instead
-	// of the selector cards above them. Both Process sections live side
-	// by side on desktop and stack on mobile, so landing at the first
-	// one reveals the full "How it works" UI immediately.
-	const emifreeHeroCta = document.getElementById( 'emifree-hero-cta' );
-	if ( emifreeHeroCta ) {
-		emifreeHeroCta.addEventListener( 'click', () => {
-			// Prefer the explicit ECO AIR anchor if it exists (the
-			// canonical "how it works" Process target on landing pages).
-			// Fall back to the outer #technology wrapper on pages where
-			// the Process sections aren't rendered (e.g. legal pages).
-			const emifreeHeroTarget = document.getElementById( 'technology-eco-air' )
-				|| document.getElementById( 'technology' );
-			if ( emifreeHeroTarget ) {
-				const emifreeOffset = ( emifreeHeader ? emifreeHeader.offsetHeight : 64 ) + 8;
-				const emifreeTop = emifreeHeroTarget.getBoundingClientRect().top + window.pageYOffset - emifreeOffset;
-				window.scrollTo( { top: emifreeTop, behavior: 'smooth' } );
-			}
-		} );
-	}
+	// ---- Hero CTAs ----
+	//
+	// The previous layout shipped a single button (id="emifree-hero-cta")
+	// that this handler clicked into a scroll to #technology-eco-air.
+	// The current hero is built from two <a href> anchors instead:
+	//   - href="#contact"   — the dominant "Contact Us!" button
+	//   - href="#technology" — the quiet underlined tech-link
+	// Both are picked up by the generic anchor smooth-scroll handler
+	// below, so no per-button JS is needed. The dedicated click handler
+	// is removed; if a future hero CTA needs a non-href target (a modal,
+	// an external URL, an arbitrary JS scroll), reintroduce a single
+	// targeted handler here rather than rebuilding the per-button logic.
 
 	// ---- Smooth scroll for in-page anchors (header nav, footer links) ----
 	// Handles three href shapes uniformly:

@@ -91,7 +91,7 @@ function emifree_featured_blog_card( $emifree_post ) {
 				width="1280"
 				height="720"
 			>
-			<span class="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-full text-sm font-semibold">
+			<span class="absolute top-4 left-4 bg-amber-500 text-zinc-900 px-3 py-1 rounded-full text-sm font-semibold">
 				<?php echo esc_html( $emifree_category ); ?>
 			</span>
 		</div>

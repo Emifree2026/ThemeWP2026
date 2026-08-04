@@ -120,9 +120,9 @@ emifree_require_section_data( 'footer' );
 				© <?php echo esc_html( gmdate( 'Y' ) ); ?> Emifree GmbH · Pestalozzistraße 13 · 12557 Berlin · Germany
 			</div>
 			<div class="flex items-center space-x-4 text-zinc-500 text-sm">
-				<a href="mailto:info@emifree.com" class="hover:text-white transition-colors">info@emifree.com</a>
+				<a href="mailto:info@emifree.com" class="text-zinc-300 hover:text-white transition-colors">info@emifree.com</a>
 				<span aria-hidden="true">·</span>
-				<a href="tel:+493076283520" class="hover:text-white transition-colors">+49 307 628 3520</a>
+				<a href="tel:+493076283520" class="text-zinc-300 hover:text-white transition-colors">+49 307 628 3520</a>
 			</div>
 		</div>
 

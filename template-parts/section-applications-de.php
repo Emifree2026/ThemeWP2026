@@ -98,8 +98,10 @@ $emifree_apps = array(
 							<?php echo esc_html( $emifree_app['description'] ); ?>
 						</p>
 
-						<!-- SEO question — surfaced as a subtle italic line. -->
-						<p class="text-sm text-zinc-400 italic">
+						<!-- SEO question — surfaced as a subtle italic line.
+						     text-zinc-600 keeps WCAG AA contrast (5.74:1 on the
+						     white card) while still reading as muted copy. -->
+						<p class="text-sm text-zinc-600 italic">
 							&ldquo;<?php echo esc_html( $emifree_app['question'] ); ?>&rdquo;
 						</p>
 					</div>

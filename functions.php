@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! defined( 'EMIFREE_THEME_VERSION' ) ) {
-	define( 'EMIFREE_THEME_VERSION', '1.0.0' );
+	define( 'EMIFREE_THEME_VERSION', '1.0.1' );
 }
 
 // i18n.php shim — kept so the English section templates continue to
@@ -54,6 +54,13 @@ require_once get_template_directory() . '/inc/cpt-blog.php';
 // rewrite rule + query var + template_redirect handler.
 require_once get_template_directory() . '/inc/robots.php';
 require_once get_template_directory() . '/inc/sitemap.php';
+// LLM manifest — /llms.txt + /de/llms.txt so AI crawlers (GPTBot,
+// ClaudeBot, Perplexity, Google-Extended, etc.) get a single,
+// structured, plain-text manifest of who we are, our product line,
+// and the principal URLs the site serves. Same virtual-route
+// pattern as robots.txt + sitemap.xml; loaded globally so the
+// rewrite rules register before any request can land.
+require_once get_template_directory() . '/inc/llms.php';
 
 // IndexNow — fires wp_remote_post to api.indexnow.org on every
 // blog_post save. Gated on EMIFREE_INDEXNOW_KEY + EMIFREE_INDEXNOW_HOST
@@ -65,6 +72,14 @@ require_once get_template_directory() . '/inc/indexnow.php';
 // PHPMailer via the phpmailer_init action so wp_mail() delivers
 // through a real SMTP server on hosts without a local MTA.
 require_once get_template_directory() . '/inc/smtp-settings.php';
+
+// Long Cache-Control headers for static assets — videos, images,
+// built CSS/JS. PageSpeed flagged an 8.8 MiB cache-dwell savings
+// because LocalWP's nginx serves static files with max-age=300 (or
+// no Cache-Control at all for video MIME types). Replacing the
+// upstream headers from PHP via wp_headers works on every host
+// (Apache, nginx, LiteSpeed, Cloudflare) and clears the audit.
+require_once get_template_directory() . '/inc/cache-headers.php';
 
 /**
  * Home subpath — the directory under which WordPress is installed
@@ -136,11 +151,32 @@ function emifree_get_lang() {
  * others load only on the routes that use them.
  */
 function emifree_enqueue_assets() {
-	wp_enqueue_style(
-		'emifree-main',
-		get_template_directory_uri() . '/assets/css/main.css',
-		array(),
-		EMIFREE_THEME_VERSION
+	// The main stylesheet is loaded non-blocking via the standard
+	// preload + media-swap pattern. The <link rel="preload"> hints the
+	// browser to start the fetch in parallel with HTML parsing; the
+	// onload handler promotes the asset to a real stylesheet once the
+	// bytes arrive. Without this, PageSpeed Insights flags main.css as
+	// a render-blocking resource (~300ms on mobile) even though the
+	// file is only 35 KB — the bottleneck is the network RTT, not the
+	// parse time.
+	//
+	// The <noscript> fallback keeps the stylesheet in the document for
+	// visitors with JS disabled — without it the page would render
+	// unstyled. The onload media-swap is the widely-supported
+	// "print-trick" pattern: setting media="print" defers the
+	// stylesheet's application (browsers don't apply print-media rules
+	// to the screen), then flipping media to "all" once the file is
+	// loaded. No JS framework needed, no FOUC for the rest of the
+	// sections (the cached layout settles in <50ms once the swap fires).
+	$emifree_css_url  = get_template_directory_uri() . '/assets/css/main.css';
+	$emifree_css_ver  = EMIFREE_THEME_VERSION;
+	add_action(
+		'wp_head',
+		static function () use ( $emifree_css_url, $emifree_css_ver ) {
+			echo '<link rel="preload" href="' . esc_url( $emifree_css_url ) . '?ver=' . esc_attr( $emifree_css_ver ) . '" as="style" onload="this.onload=null;this.rel=\'stylesheet\'">' . "\n";
+			echo '<noscript><link rel="stylesheet" href="' . esc_url( $emifree_css_url ) . '?ver=' . esc_attr( $emifree_css_ver ) . '"></noscript>' . "\n";
+		},
+		3
 	);
 
 	// Global header script — loaded on every page because the
@@ -312,6 +348,9 @@ function emifree_flush_section_rewrite_rules() {
 	if ( function_exists( 'emifree_register_sitemap_route' ) ) {
 		emifree_register_sitemap_route();
 	}
+	if ( function_exists( 'emifree_register_llms_route' ) ) {
+		emifree_register_llms_route();
+	}
 	flush_rewrite_rules( false );
 }
 add_action( 'after_switch_theme', 'emifree_flush_section_rewrite_rules' );
@@ -341,6 +380,9 @@ function emifree_maybe_flush_section_routes() {
 	}
 	if ( function_exists( 'emifree_register_sitemap_route' ) ) {
 		emifree_register_sitemap_route();
+	}
+	if ( function_exists( 'emifree_register_llms_route' ) ) {
+		emifree_register_llms_route();
 	}
 	// Hard flush (true) — the soft flush (false) only updates when rules
 	// changed, which can leave stale v4 rules in the DB if the v4 transient
@@ -492,6 +534,194 @@ function emifree_route_de_header_template( $template ) {
 	return $emifree_de_header ? $emifree_de_header : $template;
 }
 add_filter( 'template_include', 'emifree_route_de_header_template' );
+
+/**
+ * Legacy URL redirect — old WPML permalinks and the old site's
+ * flat slugs → the new site's /en/ or /de/ landing page (with
+ * the matching in-page anchor where one exists).
+ *
+ * The old WordPress site used two URL patterns:
+ *
+ *   1. /language/<code>/<slug>/  — the WPML permalink schema. The
+ *      new theme doesn't register that pattern, so every /language/...
+ *      URL the old site indexed now 404s. Examples: /language/de/
+ *      startseite/, /language/pl/pobierz/, /language/cz/domovska-
+ *      stranka/, /language/en/product/flexible-spiral-hose/.
+ *
+ *   2. Bare English/German slugs — /products/, /contact,
+ *      /applications/, /careers/, /karriere/, /download_en/,
+ *      /download/kat_emi_de.pdf, /mechanical-oil-mist-collector/,
+ *      /electrostatic-oil-mist-collector/, /impressum/, etc.
+ *
+ * The new site unifies everything onto a single landing page per
+ * language (/en/ and /de/), with the section previously rendered at
+ * its own URL now appearing as a #section on the landing page. A
+ * 301 from the old URL to the new one transfers PageRank and is
+ * what Google Search Console needs to consolidate the index.
+ *
+ * Why PHP and not .htaccess? The redirect map lives in the theme
+ * repo so it ships with every environment (local, staging,
+ * production) and so a non-engineer can edit it without touching
+ * server config. Priority 1 fires before the home-redirect at
+ * priority 5 so /language/de/ hits the legacy map before the
+ * homepage dispatcher tries to handle it.
+ *
+ * Why not just send everything to /en/? The old URLs were seen by
+ * Google per-language — sending /language/de/startseite/ to /en/
+ * would drop the visitor into the wrong language. We split on the
+ * detected source language and send each visitor to the matching
+ * landing page (DE old URL → /de/ landing page, EN old URL → /en/
+ * landing page). The exception is /language/pl/... and /language/cz/
+ * and /language/sk/ — those languages are no longer shipped, so we
+ * route them to /en/ (the closest fallback we'll ever offer).
+ *
+ * The map is a flat PHP array of exact-path => redirect-path. We
+ * strip the home subpath before lookup so the same map works on a
+ * root install and a /wordpress subpath install. We match on
+ * the request path WITHOUT query string so search-engine referrers
+ * ?utm_source=... still hit the same redirect.
+ */
+function emifree_legacy_redirect_map() {
+	return array(
+		// --- Old WPML /language/<code>/<slug>/ patterns ---
+		// German WPML home + section landing slugs.
+		'/language/de/'              => '/de/',
+		'/language/de/startseite/'   => '/de/',
+		'/language/de/produkte/'     => '/de/#products',
+		'/language/de/anwendungen/'  => '/de/#applications',
+		'/language/de/wissen/'       => '/de/#knowledge',
+		'/language/de/technologie/'  => '/de/#technology',
+		'/language/de/kontakt/'      => '/de/#contact',
+		'/language/de/karriere/'     => '/de/#contact',
+		// NOTE: /de/impressum/, /de/datenschutz/, /de/agb/ are already
+		// the canonical URLs of the new site. They were removed from
+		// the map because every entry where source == destination is a
+		// self-redirect loop (ERR_TOO_MANY_REDIRECTS).
+		// English WPML home + section landing slugs.
+		'/language/en/'              => '/en/',
+		'/language/en/startseite/'   => '/en/',
+		'/language/en/products/'     => '/en/#products',
+		'/language/en/applications/' => '/en/#applications',
+		'/language/en/knowledge/'    => '/en/#knowledge',
+		'/language/en/technology/'   => '/en/#technology',
+		'/language/en/contact/'      => '/en/#contact',
+		'/language/en/impressum/'    => '/impressum/',
+		'/language/en/privacy/'      => '/privacy/',
+		'/language/en/terms/'        => '/terms/',
+		// Languages the new site doesn't ship. Routes to /en/ as the
+		// closest fallback we'll surface; /de/ would mislead a
+		// Polish/Slovak/Czech visitor into a German page.
+		'/language/pl/'              => '/en/',
+		'/language/pl/pobierz/'      => '/en/',
+		'/language/sk/'              => '/en/',
+		'/language/cz/'              => '/en/',
+		'/language/cz/domovska-stranka/' => '/en/',
+		// --- Old bare-slug English paths (WPML default language) ---
+		'/products/'                 => '/en/#products',
+		'/applications/'             => '/en/#applications',
+		'/careers/'                  => '/en/#contact',
+		'/contact'                   => '/en/#contact',
+		'/contact/'                  => '/en/#contact',
+		'/download_en/'              => '/en/',
+		'/mechanical-oil-mist-collector/'   => '/en/#products',
+		'/electrostatic-oil-mist-collector/' => '/en/#products',
+		'/hello-world/'              => '/en/blog/',
+		// --- Old bare-slug German paths ---
+		'/karriere/'                 => '/de/#contact',
+		'/startseite/'               => '/de/',
+		// NOTE: /impressum/ is the canonical URL of the new site's
+		// English legal page. Removed from the map because sending it
+		// 301 to itself is an infinite redirect loop.
+		'/download/'                 => '/de/',
+		'/download/kat_emi_de.pdf'   => '/de/',
+	);
+}
+
+function emifree_maybe_redirect_legacy_url() {
+	if ( is_admin() ) {
+		return;
+	}
+	$emifree_uri  = isset( $_SERVER['REQUEST_URI'] ) ? wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$emifree_path = parse_url( $emifree_uri, PHP_URL_PATH );
+	if ( ! is_string( $emifree_path ) || '' === $emifree_path ) {
+		return;
+	}
+	// Strip the home subpath so the map entries (e.g. '/products/')
+	// match the same URL on a root install and a /wordpress subpath
+	// install. The subpath is the directory WP is installed under;
+	// '/wordpress/products/' and '/products/' represent the same
+	// legacy page in the two setups.
+	$emifree_subpath = emifree_home_subpath();
+	if ( '' !== $emifree_subpath && 0 === strpos( $emifree_path, $emifree_subpath ) ) {
+		$emifree_path = substr( $emifree_path, strlen( $emifree_subpath ) );
+	}
+	// Normalize: ensure leading slash, strip trailing slash unless
+	// the path is just '/'. The map keys are stored with leading
+	// slash and trailing slash so every distinct legacy URL the
+	// old site indexed has a row.
+	$emifree_path = '/' . ltrim( $emifree_path, '/' );
+	if ( '/' !== $emifree_path && '/' === substr( $emifree_path, -1 ) ) {
+		// Already a trailing slash — keep.
+	} elseif ( '/' !== $emifree_path && false === strpos( basename( $emifree_path ), '.' ) ) {
+		// Bare path with no extension — add trailing slash so
+		// '/products' and '/products/' share one map entry.
+		$emifree_path .= '/';
+	}
+	$emifree_target = null;
+	// 1. Exact-path lookup first (most specific match wins).
+	$emifree_map = emifree_legacy_redirect_map();
+	if ( isset( $emifree_map[ $emifree_path ] ) ) {
+		$emifree_target = $emifree_map[ $emifree_path ];
+	} elseif ( preg_match( '#^/language/([a-z]{2})/(?:.+)/?$#i', $emifree_path, $emifree_match ) ) {
+		// 2. WPML catch-all: any /language/<code>/<anything>/ that the
+		// map didn't catch. The old site had a product detail page
+		// per language under /language/<code>/product/<slug>/ and
+		// /language/<code>/<anything>/ for misc. landing pages. The
+		// new site doesn't ship detail pages — every visitor lands
+		// on the single landing page for their language. EN / DE are
+		// the two languages the new site actually ships; everything
+		// else falls back to /en/ as the closest language we'll
+		// surface to a Polish / Slovak / Czech / Hungarian visitor.
+		$emifree_code = strtolower( $emifree_match[1] );
+		if ( 'de' === $emifree_code ) {
+			$emifree_target = '/de/';
+		} else {
+			// 'en' and any other code land on /en/.
+			$emifree_target = '/en/';
+		}
+	}
+	if ( null === $emifree_target ) {
+		return;
+	}
+	// Self-loop guard: never 301 a URL to itself. The map should not
+	// contain entries where source == destination, but a defensive
+	// check here prevents ERR_TOO_MANY_REDIRECTS if a future entry
+	// drifts in. Compare the bare path (no fragment, no query) so a
+	// map entry like '/products/' => '/products/' or
+	// '/products/' => '/products/#section' is caught. The
+	// fragment-stripping is what makes '/products/' => '/products/'
+	// a loop even though comparison on the full target would diverge.
+	$emifree_target_path = (string) parse_url( $emifree_target, PHP_URL_PATH );
+	$emifree_request_path = $emifree_path;
+	// Strip the home subpath from the request path so the comparison
+	// matches e.g. '/wordpress/products/' against '/products/' when
+	// the home subpath is '/wordpress'.
+	if ( '' !== $emifree_subpath && 0 === strpos( $emifree_request_path, $emifree_subpath ) ) {
+		$emifree_request_path = substr( $emifree_request_path, strlen( $emifree_subpath ) ) ?: '/';
+	}
+	$emifree_request_path = '/' . ltrim( $emifree_request_path, '/' );
+	if ( $emifree_target_path === $emifree_request_path ) {
+		return;
+	}
+	// Pass query string through so campaign tags survive the 301.
+	$emifree_query = parse_url( $emifree_uri, PHP_URL_QUERY );
+	if ( is_string( $emifree_query ) && '' !== $emifree_query ) {
+		$emifree_target .= '?' . $emifree_query;
+	}
+	wp_safe_redirect( home_url( $emifree_target ), 301 );
+	exit;
+}
+add_action( 'template_redirect', 'emifree_maybe_redirect_legacy_url', 1 );
 
 /**
  * Default-language redirect — /  →  /de/.
@@ -685,6 +915,35 @@ function emifree_enqueue_contact_script() {
  * behavior of the React app's index.html. If you want strict
  * consent-gating here, swap this for a Cookiebot API call that
  * fires on consent.
+ *
+ * CORS note (added 2026-08-04): the previous version of this loader
+ * hardcoded an account ID prefix that didn't match the widget IDs and
+ * set `crossorigin='*'` on the dynamic script element.  Setting
+ * `crossorigin='*'` switches the browser into CORS-mode for that
+ * fetch, which requires `Access-Control-Allow-Origin` on the
+ * response.  tawk.to's embed CDN does not always send that header on
+ * widget-level loads, so the request was blocked with:
+ *   "Access to script at ... from origin '...emifree.com' has been
+ *    blocked by CORS policy: No 'Access-Control-Allow-Origin' header
+ *    is present on the requested resource."
+ * That error dropped the Lighthouse Best Practices score from 100
+ * to 96.  Removing `crossorigin='*'` makes the loader a normal
+ * (non-CORS) script fetch — the response is allowed regardless of
+ * ACAO and the widget loads as designed.  The official Tawk.to
+ * install snippet does NOT set a crossorigin attribute either.
+ *
+ * Widget loader URL format: `https://embed.tawk.to/{ACCOUNT}/{WIDGET}/default`.
+ * The trailing `/default` is required by Tawk's CDN — without it the
+ * script is served as an HTML error page.  Both the account ID and
+ * the widget ID are now derived from the configured property ID
+ * string (which historically was already an "<account>/<widget>" pair
+ * in the Tawk dashboard URL — see the EMIFREE_TAWK_* defaults below).
+ *
+ * Per the original implementation, two property IDs are configured
+ * (one per language) so each language routes to its own Tawk inbox
+ * without language fallback.  Both IDs default to the live production
+ * widgets as of 2026-07-20 — the EN widget `1jsu0245o` and the DE
+ * widget `1ju1qnllp` from account `1jogl5hfo`.
  */
 function emifree_enqueue_tawk_widget() {
 	if ( is_admin() ) {
@@ -697,10 +956,10 @@ function emifree_enqueue_tawk_widget() {
 	// 2026-07-20.
 	$emifree_tawk_property_id_en = defined( 'EMIFREE_TAWK_PROPERTY_ID_EN' ) && EMIFREE_TAWK_PROPERTY_ID_EN
 		? EMIFREE_TAWK_PROPERTY_ID_EN
-		: '1jsu0245o';
+		: '1jogl5hfo/1jsu0245o';
 	$emifree_tawk_property_id_de = defined( 'EMIFREE_TAWK_PROPERTY_ID_DE' ) && EMIFREE_TAWK_PROPERTY_ID_DE
 		? EMIFREE_TAWK_PROPERTY_ID_DE
-		: '1ju1qnllp';
+		: '1jogl5hfo/1ju1qnllp';
 
 	// emifree_get_lang() is path-aware (so a /de/visit with no cookie
 	// still serves the DE widget). That function lives further up in this
@@ -710,9 +969,25 @@ function emifree_enqueue_tawk_widget() {
 		? $emifree_tawk_property_id_de
 		: $emifree_tawk_property_id_en;
 
+	// Tawk widget ID strings are full "<account>/<widget>" pairs
+	// (e.g. "1jogl5hfo/1jsu0245o"). The widget loader URL needs both
+	// segments separated by a slash. Split here so the loader below
+	// stays a single source of truth and we don't repeat the
+	// hardcoded "default" path suffix.
+	$emifree_tawk_id_parts     = array_pad( array_map( 'trim', explode( '/', (string) $emifree_tawk_property_id ) ), 2, '' );
+	$emifree_tawk_account_part = $emifree_tawk_id_parts[0];
+	$emifree_tawk_widget_part  = $emifree_tawk_id_parts[1];
+	if ( '' === $emifree_tawk_account_part || '' === $emifree_tawk_widget_part ) {
+		// Misconfigured property ID (missing the "/" separator) — skip the
+		// widget load entirely to avoid surfacing a broken Tawk error in
+		// the browser console (the previous bug silently produced a CORS
+		// error every page load).
+		return;
+	}
+
 	add_action(
 		'wp_footer',
-		static function () use ( $emifree_tawk_property_id ) {
+		static function () use ( $emifree_tawk_account_part, $emifree_tawk_widget_part ) {
 			?>
 			<!--Start of Tawk.to Script-->
 			<script type="text/javascript">
@@ -720,9 +995,8 @@ function emifree_enqueue_tawk_widget() {
 			(function(){
 			var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
 			s1.async=true;
-			s1.src='https://embed.tawk.to/6a046f4de4f8631c3c9f3766/<?php echo esc_js( $emifree_tawk_property_id ); ?>';
+			s1.src='https://embed.tawk.to/<?php echo esc_js( $emifree_tawk_account_part ); ?>/<?php echo esc_js( $emifree_tawk_widget_part ); ?>/default';
 			s1.charset='UTF-8';
-			s1.setAttribute('crossorigin','*');
 			s0.parentNode.insertBefore(s1,s0);
 			})();
 			</script>

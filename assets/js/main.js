@@ -1,9 +1,8 @@
 // Page-level behaviors shared across the landing page.
 //
 // Responsibilities:
-//  - Hero background video autoplay (two-stage retry that respects
-//    iOS Safari's user-gesture gate — see commit message of the
-//    change that introduced this).
+//  - Hero background video carousel — two <video> elements cross-fade
+//    on the `ended` event; first paint + iOS gesture gate retry.
 //  - Sticky header background flip on scroll past 20 px.
 //  - Mobile menu open/close toggle.
 //  - Smooth scroll for in-page anchor links (legacy fallback for
@@ -28,37 +27,91 @@
 (function () {
     'use strict';
 
-    // ----- Hero background video autoplay retry -----
+    // ----- Hero background video carousel -----
     //
-    // The template-parts emit a single <video id="hero-video">. The
-    // page-level autoplay attribute fires the first paint attempt;
-    // this catches any case where the autoplay attribute was
-    // blocked (mobile Safari data-saver, iOS Low Power Mode,
-    // autoplay disabled by browser policy) and retries after the
-    // first user gesture.
-    const heroVideo = document.getElementById('hero-video');
+    // The hero template (EN + DE) emits two <video> elements with the
+    // shared class `emifree-hero-video`. Both render at the same
+    // z-index and start opacity-0; this controller promotes one to
+    // active (opacity-100 via the `.emifree-hero-video--active` class)
+    // and, when the active video fires `ended`, fades it out and
+    // fades the other in. Cross-fade is a CSS opacity transition
+    // (`transition-opacity duration-1000` on the markup), so the
+    // controller only flips the class.
+    //
+    // Why no autoplay/loop attributes on the markup? Autoplay on two
+    // sibling videos caused the old "old-video flash + new-video
+    // flash" symptom (both started simultaneously and the painted one
+    // flipped during the load). Now only the active video plays at
+    // any moment; the other sits paused at its current frame so the
+    // handoff is seamless.
+    //
+    // Why no poster? Earlier revisions set poster="emilogo.png" and
+    // the static logo flashed during decode on every page load. The
+    // browser keeps the last decoded frame in place until the next
+    // one is ready, so no poster is the right default.
+    //
+    // The first-paint gesture retry is retained from the previous
+    // implementation: iOS Safari gates autoplay on user interaction
+    // for any video that wasn't triggered by an explicit gesture.
+    // On the first user gesture we kick the active video; subsequent
+    // swaps don't need a fresh gesture because the previous `play()`
+    // call already established the gesture context.
+    const heroVideos = Array.from(document.querySelectorAll('.emifree-hero-video'));
 
-    if (heroVideo) {
-        // Older mobile Safari drops the loop attribute on
-        // programmatic load. Re-assert.
-        heroVideo.loop = true;
+    if (heroVideos.length === 2) {
+        // Track which index is currently visible. starts at 0 so the
+        // first <video> in document order (hero-video-primary in the
+        // template — the new "Video Project hero.mp4") plays first.
+        let emifreeActiveIndex = 0;
+        const emifreeOtherIndex = function (i) { return 1 - i; };
 
-        // Stage 1: try to play immediately on script load. Catches
-        // desktop + any mobile browser that allowed the markup's
-        // autoplay attribute.
-        const emifreePlayPromise = heroVideo.play();
-        if (emifreePlayPromise && typeof emifreePlayPromise.catch === 'function') {
-            emifreePlayPromise.catch(function () {
-                // Stage 1 rejected. Defer retry to first user
-                // gesture. Once-flag so we don't pile up listeners
-                // if multiple events fire in quick succession.
-                if (heroVideo.dataset.emifreeGestureArmed === '1') { return; }
-                heroVideo.dataset.emifreeGestureArmed = '1';
+        const emifreeSetActive = function (nextIndex) {
+            // Cross-fade: the active class is the ONLY thing that
+            // changes per swap. CSS transition on the markup handles
+            // the 1 s opacity ease. After the swap, kick playback on
+            // the now-visible video.
+            const next = heroVideos[nextIndex];
+            const prev = heroVideos[emifreeActiveIndex];
+
+            prev.classList.remove('emifree-hero-video--active');
+            next.classList.add('emifree-hero-video--active');
+
+            // Reset the previous video to the start so its next
+            // playback is a clean run-through (otherwise an `ended`
+            // video sitting at the end of its timeline would either
+            // replay from the wrong point or refuse to play).
+            try { prev.currentTime = 0; } catch (e) { /* noop */ }
+
+            emifreeActiveIndex = nextIndex;
+
+            const emifreePlayPromise = next.play();
+            if (emifreePlayPromise && typeof emifreePlayPromise.catch === 'function') {
+                emifreePlayPromise.catch(function (e) {
+                    console.log('Hero carousel video blocked from playing:', e);
+                });
+            }
+        };
+
+        heroVideos.forEach(function (v, idx) {
+            v.addEventListener('ended', function () {
+                emifreeSetActive(emifreeOtherIndex(idx));
+            });
+        });
+
+        // First paint: promote video 0 to active and attempt to play.
+        // If the browser blocks it (iOS, data-saver, etc.), arm a
+        // one-shot gesture listener for the first user interaction.
+        heroVideos[0].classList.add('emifree-hero-video--active');
+        const emifreeFirstPlay = heroVideos[0].play();
+        if (emifreeFirstPlay && typeof emifreeFirstPlay.catch === 'function') {
+            emifreeFirstPlay.catch(function () {
+                if (heroVideos[0].dataset.emifreeGestureArmed === '1') { return; }
+                heroVideos[0].dataset.emifreeGestureArmed = '1';
 
                 const emifreeArmedEvents = ['touchstart', 'pointerdown', 'mousedown', 'keydown', 'scroll'];
                 const emifreeArmPlay = function () {
-                    heroVideo.play().catch(function (e) {
-                        console.log('Hero autoplay still blocked after gesture:', e);
+                    heroVideos[0].play().catch(function (e) {
+                        console.log('Hero carousel autoplay still blocked after gesture:', e);
                     });
                     emifreeArmedEvents.forEach(function (ev) {
                         window.removeEventListener(ev, emifreeArmPlay, { capture: true });
@@ -68,6 +121,16 @@
                     window.addEventListener(ev, emifreeArmPlay, { capture: true, passive: true });
                 });
             });
+        }
+    } else if (heroVideos.length === 1) {
+        // Defensive fallback: if a future revision ships only one
+        // video, keep the original autoplay behavior so the hero
+        // doesn't render a black box.
+        const solo = heroVideos[0];
+        solo.classList.add('emifree-hero-video--active');
+        const soloPlay = solo.play();
+        if (soloPlay && typeof soloPlay.catch === 'function') {
+            soloPlay.catch(function () { /* swallow */ });
         }
     }
 

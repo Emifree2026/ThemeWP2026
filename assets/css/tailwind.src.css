@@ -38,6 +38,26 @@
 		opacity: 0;
 		animation: hero-fade-up 0.7s ease-out forwards;
 	}
+
+	/* Hero background video carousel.
+	 * Both hero <video> elements render with `opacity-0` (Tailwind
+	 * utility from the markup); main.js promotes exactly one to
+	 * `emifree-hero-video--active` at any moment. The `transition-opacity
+	 * duration-1000` Tailwind classes on the <video> element give the
+	 * CSS transition; this explicit rule is the single source of
+	 * truth for the visible state so the cross-fade still works even
+	 * if Tailwind's content scanner misses the dynamic `opacity-100`
+	 * class that JS adds. `!important` overrides Tailwind's
+	 * `.opacity-0 { opacity: 0; }` utility which otherwise wins by
+	 * source-order.
+	 *
+	 * Active video is rendered at 90% opacity (10% see-through) so
+	 * the parent's `bg-[#0a0a0a]` shows through and darkens the
+	 * video uniformly — a consistent preview layer for the
+	 * headline + chips + logos that works across every frame. */
+	.emifree-hero-video--active {
+		opacity: 0.9 !important;
+	}
 }
 
 /* ----- .prose wrapper for CPT-authored blog bodies -----

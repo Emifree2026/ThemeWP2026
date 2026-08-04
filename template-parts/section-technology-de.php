@@ -114,7 +114,7 @@ $emifree_technologies = array(
 			<p class="text-xl text-slate-600 max-w-3xl mx-auto">
 				Ob Ölnebel, Emulsionen, Rauch oder ultrafeine Aerosole – unsere selbstreinigenden Filtersysteme liefern sauberere Luft, geringeren Wartungsaufwand und stabile Leistung.
 			</p>
-			<p class="text-slate-400 text-sm mt-3">
+			<p class="text-slate-500 text-sm mt-3">
 				Vergleichen Sie die Technologien unten oder springen Sie direkt zur passenden Lösung.
 			</p>
 		</div>

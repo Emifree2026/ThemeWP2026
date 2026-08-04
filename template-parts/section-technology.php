@@ -32,7 +32,7 @@ $emifree_technologies = emifree_technologies();
 				Whether you handle oil mist, emulsions, smoke, or ultra-fine aerosols — our self-cleaning
 				filtration systems deliver cleaner air, lower maintenance, and stable performance.
 			</p>
-			<p class="text-slate-400 text-sm mt-3">
+			<p class="text-slate-500 text-sm mt-3">
 				Compare technologies below or jump directly to the right solution.
 			</p>
 		</div>

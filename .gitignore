@@ -38,3 +38,14 @@ Blog?_de.md
 # Working notes and handoffs (not part of the shipped theme).
 Handover_*.md
 NEXT_AGENT_HANDOFF*.md
+
+# Image-optimization backups produced by optimize-images.ps1. The
+# script keeps a <name>.original.<ext> alongside each resized image
+# so the run can be undone without re-downloading the source file.
+# These are working-only artifacts; ship the optimized files, not
+# the originals.
+*.original.png
+*.original.jpg
+*.original.jpeg
+*.original.webp
+*.original.gif

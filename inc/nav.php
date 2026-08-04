@@ -54,8 +54,8 @@ if ( ! function_exists( 'emifree_nav_items' ) ) :
 
 		if ( $emifree_is_de ) {
 			return array(
-				array( 'label' => 'Anwendungen', 'href' => home_url( '/de/#applications' ) ),
 				array( 'label' => 'Produkte',    'href' => home_url( '/de/#products' ) ),
+				array( 'label' => 'Anwendungen', 'href' => home_url( '/de/#applications' ) ),
 				array( 'label' => 'Wissen',      'href' => home_url( '/de/#knowledge' ) ),
 				array( 'label' => 'Technologie', 'href' => home_url( '/de/#technology' ) ),
 				array( 'label' => 'Kontakt',     'href' => home_url( '/de/#contact' ) ),
@@ -67,8 +67,8 @@ if ( ! function_exists( 'emifree_nav_items' ) ) :
 			// /en/ — otherwise the click navigates to / which the
 			// emifree_maybe_redirect_home_to_de() handler 301s to /de/,
 			// silently flipping EN users to German mid-click.
-			array( 'label' => 'Applications', 'href' => home_url( '/en/#applications' ) ),
 			array( 'label' => 'Products',     'href' => home_url( '/en/#products' ) ),
+			array( 'label' => 'Applications', 'href' => home_url( '/en/#applications' ) ),
 			array( 'label' => 'Knowledge',    'href' => home_url( '/en/#knowledge' ) ),
 			array( 'label' => 'Technology',   'href' => home_url( '/en/#technology' ) ),
 			array( 'label' => 'Contact',      'href' => home_url( '/en/#contact' ) ),

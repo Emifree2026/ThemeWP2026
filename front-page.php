@@ -12,18 +12,28 @@
  *  - Inquiry modal (Piece 10, included as overlay)
  */
 
+// Landing-page SEO surface — meta description, OG/Twitter cards,
+// canonical, hreflang alternates (en ↔ de + x-default), and the
+// Organization / WebSite / Product JSON-LD set. Without this the
+// homepage ships no description and the validator flags it as
+// having no schema.org elements detected. Must run BEFORE
+// get_header() so the wp_head callbacks are registered before the
+// <head> is emitted.
+require_once get_template_directory() . '/inc/seo-front-page.php';
+emifree_seo_front_page( 'en' );
+
 get_header();
 ?>
 
 <main>
 	<?php get_template_part( 'template-parts/section', 'hero' ); ?>
 
-	<?php if ( locate_template( 'template-parts/section-applications.php' ) ) : ?>
-		<?php get_template_part( 'template-parts/section', 'applications' ); ?>
-	<?php endif; ?>
-
 	<?php if ( locate_template( 'template-parts/section-products.php' ) ) : ?>
 		<?php get_template_part( 'template-parts/section', 'products' ); ?>
+	<?php endif; ?>
+
+	<?php if ( locate_template( 'template-parts/section-applications.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'applications' ); ?>
 	<?php endif; ?>
 
 	<?php if ( locate_template( 'template-parts/section-technology.php' ) ) : ?>

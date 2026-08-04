@@ -23,6 +23,14 @@
  *  - Inquiry modal overlay (Piece 10, when shipped)
  */
 
+// Landing-page SEO surface — same as front-page.php but with the
+// German strings set. hreflang emits en/de alternates + x-default
+// pointing at /en/ (the canonical default-locale landing). Must
+// run BEFORE get_header() so the wp_head callbacks are registered
+// before the <head> is emitted.
+require_once get_template_directory() . '/inc/seo-front-page.php';
+emifree_seo_front_page( 'de' );
+
 get_header();
 ?>
 
@@ -31,12 +39,12 @@ get_header();
 		<?php get_template_part( 'template-parts/section', 'hero-de' ); ?>
 	<?php endif; ?>
 
-	<?php if ( locate_template( 'template-parts/section-applications-de.php' ) ) : ?>
-		<?php get_template_part( 'template-parts/section', 'applications-de' ); ?>
-	<?php endif; ?>
-
 	<?php if ( locate_template( 'template-parts/section-products-de.php' ) ) : ?>
 		<?php get_template_part( 'template-parts/section', 'products-de' ); ?>
+	<?php endif; ?>
+
+	<?php if ( locate_template( 'template-parts/section-applications-de.php' ) ) : ?>
+		<?php get_template_part( 'template-parts/section', 'applications-de' ); ?>
 	<?php endif; ?>
 
 	<?php if ( locate_template( 'template-parts/section-technology-de.php' ) ) : ?>
